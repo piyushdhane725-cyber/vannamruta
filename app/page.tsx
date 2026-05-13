@@ -219,7 +219,7 @@ export default function Home() {
         </AnimatePresence>
       </div>
 
-      {/* HERO CONTENT - Left Aligned */}
+      {/* HERO CONTENT */}
       <div className="relative z-30 min-h-screen w-full flex items-center pointer-events-none">
         <AnimatePresence>
           {phase === 3 && showContent && (
@@ -228,71 +228,78 @@ export default function Home() {
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 2, ease: "easeOut" }}
-              className="w-full h-full max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-start pt-28 md:pt-0 md:justify-center pointer-events-auto"
+              className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-between pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
             >
               
               <motion.div 
-                className="max-w-xl xl:max-w-2xl flex flex-col items-center text-center md:items-start md:text-left mx-auto md:mx-0"
+                className="w-full h-full md:h-auto max-w-xl xl:max-w-2xl flex flex-col justify-between md:justify-start items-center text-center md:items-start md:text-left mx-auto md:mx-0"
                 animate={{
                   x: mousePos.x * 12,
                   y: mousePos.y * 12,
                 }}
                 transition={{ type: "tween", ease: "easeOut", duration: 0.8 }}
               >
-                <motion.p 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 1.5, delay: 0.5 }}
-                  className="text-[10px] md:text-xs tracking-[0.5em] text-yellow-500/90 mb-8 uppercase"
-                >
-                  The Legendary Ayurvedic Elixir
-                </motion.p>
                 
-                <motion.h1 
-                  initial={{ y: 30, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 2, delay: 0.8 }}
-                  className="text-5xl md:text-8xl lg:text-[100px] font-light tracking-wide text-white mb-8 md:mb-10 leading-[1.05] drop-shadow-2xl"
-                  style={{ fontFamily: "Cormorant Garamond, Georgia, serif" }}
-                >
-                  Kumkumadi<br/>
-                  <span className="italic text-yellow-100/90 ml-0 md:ml-16 block md:inline">Taila</span>
-                </motion.h1>
+                {/* TOP GROUP (Title) */}
+                <div className="flex flex-col items-center md:items-start w-full">
+                  <motion.p 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1.5, delay: 0.5 }}
+                    className="text-[10px] md:text-xs tracking-[0.5em] text-yellow-500/90 mb-4 md:mb-8 uppercase"
+                  >
+                    The Legendary Ayurvedic Elixir
+                  </motion.p>
+                  
+                  <motion.h1 
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 2, delay: 0.8 }}
+                    className="text-5xl md:text-8xl lg:text-[100px] font-light tracking-wide text-white leading-[1.05] drop-shadow-2xl"
+                    style={{ fontFamily: "Cormorant Garamond, Georgia, serif" }}
+                  >
+                    Kumkumadi<br/>
+                    <span className="italic text-yellow-100/90 ml-0 md:ml-16 block md:inline">Taila</span>
+                  </motion.h1>
+                </div>
 
-                <motion.div 
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 2, delay: 1.5 }}
-                  className="w-24 md:w-32 h-[1px] bg-gradient-to-r from-yellow-600/80 to-transparent mb-10 origin-center md:origin-left mx-auto md:mx-0"
-                />
+                {/* BOTTOM GROUP (Description, Price, Button) */}
+                <div className="flex flex-col items-center md:items-start w-full mt-auto md:mt-10">
+                  <motion.div 
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 2, delay: 1.5 }}
+                    className="w-24 md:w-32 h-[1px] bg-gradient-to-r from-yellow-600/80 to-transparent mb-6 md:mb-10 origin-center md:origin-left mx-auto md:mx-0"
+                  />
 
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 2, delay: 1.8 }}
-                  className="text-white/80 text-sm md:text-lg tracking-[0.1em] font-light leading-relaxed max-w-md mb-14 drop-shadow-md"
-                >
-                  Handcrafted with rare saffron and pristine lotus extracts.
-                  Indulge in an ageless ritual for timeless, luminous radiance.
-                </motion.p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 2, delay: 1.8 }}
+                    className="text-white/80 text-sm md:text-lg tracking-[0.1em] font-light leading-relaxed max-w-md mb-8 md:mb-14 drop-shadow-md"
+                  >
+                    Handcrafted with rare saffron and pristine lotus extracts.
+                    Indulge in an ageless ritual for timeless, luminous radiance.
+                  </motion.p>
 
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 1.5, delay: 2.2 }}
-                  className="flex flex-col md:flex-row items-center gap-8 md:gap-14"
-                >
-                  <button className="group relative overflow-hidden px-10 md:px-14 py-4 md:py-5 border border-yellow-600/50 bg-transparent text-[10px] md:text-[11px] tracking-[0.3em] text-yellow-500 transition-all duration-700 hover:border-yellow-500 hover:text-white w-fit">
-                    <span className="relative z-10">ACQUIRE NOW</span>
-                    <div className="absolute inset-0 h-full w-full translate-y-full bg-yellow-900/40 transition-transform duration-700 ease-out group-hover:translate-y-0" />
-                  </button>
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1.5, delay: 2.2 }}
+                    className="flex flex-col md:flex-row items-center gap-6 md:gap-14"
+                  >
+                    <button className="group relative overflow-hidden px-10 md:px-14 py-4 md:py-5 border border-yellow-600/50 bg-transparent text-[10px] md:text-[11px] tracking-[0.3em] text-yellow-500 transition-all duration-700 hover:border-yellow-500 hover:text-white w-fit">
+                      <span className="relative z-10">ACQUIRE NOW</span>
+                      <div className="absolute inset-0 h-full w-full translate-y-full bg-yellow-900/40 transition-transform duration-700 ease-out group-hover:translate-y-0" />
+                    </button>
 
-                  <span className="text-xl md:text-2xl tracking-[0.2em] text-yellow-100/90 font-light md:border-l md:border-yellow-600/30 md:pl-14">
-                    INR 1,999
-                  </span>
-                </motion.div>
+                    <span className="text-xl md:text-2xl tracking-[0.2em] text-yellow-100/90 font-light md:border-l md:border-yellow-600/30 md:pl-14">
+                      INR 1,999
+                    </span>
+                  </motion.div>
+                </div>
+
               </motion.div>
-
             </motion.div>
           )}
         </AnimatePresence>
