@@ -180,8 +180,8 @@ export default function Home() {
           </video>
         </motion.div>
         
-        {/* Dark gradient overlay to make left-aligned text easily readable, regardless of video brightness */}
-        <div className={`absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent z-20 pointer-events-none transition-opacity duration-[3000ms] ${phase === 3 ? 'opacity-100' : 'opacity-0'}`} />
+        {/* Dark gradient overlay: vignette on mobile, left-fade on desktop to protect text */}
+        <div className={`absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80 md:bg-gradient-to-r md:from-black/90 md:via-black/40 md:to-transparent z-20 pointer-events-none transition-opacity duration-[3000ms] ${phase === 3 ? 'opacity-100' : 'opacity-0'}`} />
       </div>
 
       {/* FIXED HEADER */}
@@ -189,7 +189,7 @@ export default function Home() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: phase === 3 ? 1 : 0 }}
         transition={{ duration: 1.5, delay: 1 }}
-        className="fixed top-0 left-0 w-full p-8 md:p-12 flex justify-between items-center z-50 pointer-events-none"
+        className="fixed top-0 left-0 w-full p-6 md:p-12 flex justify-between items-center z-50 pointer-events-none"
       >
         <div className="text-xs md:text-sm tracking-[0.4em] text-yellow-500/90 uppercase">Vannamruta</div>
         <div className="text-[10px] md:text-xs tracking-[0.2em] text-white/60 hover:text-white transition-colors cursor-pointer pointer-events-auto">CART (0)</div>
@@ -211,7 +211,7 @@ export default function Home() {
               transition={{ duration: 1.5, delay: phase === 1 ? 1.2 : 0, ease: "easeInOut" }}
               className="mt-[calc(16rem+7cm)]" /* Pushed exactly 7cm further down from its previous mt-64 position */
             >
-              <p className="text-xs md:text-base tracking-[0.8em] text-yellow-500/90 uppercase font-light drop-shadow-[0_0_20px_rgba(255,215,0,0.4)]">
+              <p className="text-[10px] md:text-base tracking-[0.4em] md:tracking-[0.8em] text-yellow-500/90 uppercase font-light drop-shadow-[0_0_20px_rgba(255,215,0,0.4)]">
                 The Elixir of Life
               </p>
             </motion.div>
@@ -228,11 +228,11 @@ export default function Home() {
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 2, ease: "easeOut" }}
-              className="w-full max-w-[1400px] mx-auto px-8 md:px-16 flex flex-col justify-center pointer-events-auto"
+              className="w-full h-full max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-start pt-28 md:pt-0 md:justify-center pointer-events-auto"
             >
               
               <motion.div 
-                className="max-w-xl xl:max-w-2xl"
+                className="max-w-xl xl:max-w-2xl flex flex-col items-center text-center md:items-start md:text-left mx-auto md:mx-0"
                 animate={{
                   x: mousePos.x * 12,
                   y: mousePos.y * 12,
@@ -252,18 +252,18 @@ export default function Home() {
                   initial={{ y: 30, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 2, delay: 0.8 }}
-                  className="text-6xl md:text-8xl lg:text-[100px] font-light tracking-wide text-white mb-10 leading-[1.05] drop-shadow-2xl"
+                  className="text-5xl md:text-8xl lg:text-[100px] font-light tracking-wide text-white mb-8 md:mb-10 leading-[1.05] drop-shadow-2xl"
                   style={{ fontFamily: "Cormorant Garamond, Georgia, serif" }}
                 >
                   Kumkumadi<br/>
-                  <span className="italic text-yellow-100/90 ml-8 md:ml-16">Taila</span>
+                  <span className="italic text-yellow-100/90 ml-0 md:ml-16 block md:inline">Taila</span>
                 </motion.h1>
 
                 <motion.div 
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 2, delay: 1.5 }}
-                  className="w-24 md:w-32 h-[1px] bg-gradient-to-r from-yellow-600/80 to-transparent mb-10 origin-left"
+                  className="w-24 md:w-32 h-[1px] bg-gradient-to-r from-yellow-600/80 to-transparent mb-10 origin-center md:origin-left mx-auto md:mx-0"
                 />
 
                 <motion.p 
@@ -280,7 +280,7 @@ export default function Home() {
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 1.5, delay: 2.2 }}
-                  className="flex flex-col md:flex-row md:items-center gap-8 md:gap-14"
+                  className="flex flex-col md:flex-row items-center gap-8 md:gap-14"
                 >
                   <button className="group relative overflow-hidden px-10 md:px-14 py-4 md:py-5 border border-yellow-600/50 bg-transparent text-[10px] md:text-[11px] tracking-[0.3em] text-yellow-500 transition-all duration-700 hover:border-yellow-500 hover:text-white w-fit">
                     <span className="relative z-10">ACQUIRE NOW</span>
@@ -345,7 +345,7 @@ export default function Home() {
 
           {/* Section 2: Contact & Footer */}
           <div className="w-full bg-[#030303] py-24 md:py-32 px-6">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20">
               
               {/* Contact Info */}
               <motion.div 
@@ -353,12 +353,12 @@ export default function Home() {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 1.5 }}
                 viewport={{ once: true }}
-                className="flex flex-col justify-center"
+                className="flex flex-col justify-center items-center text-center md:items-start md:text-left"
               >
                 <h3 className="text-3xl md:text-5xl font-light text-white mb-8" style={{ fontFamily: "Cormorant Garamond, Georgia, serif" }}>
                   Connect With Us
                 </h3>
-                <div className="w-12 h-[1px] bg-yellow-600/50 mb-10" />
+                <div className="w-12 h-[1px] bg-yellow-600/50 mb-10 mx-auto md:mx-0" />
                 <p className="text-white/50 tracking-wider font-light leading-relaxed mb-8 max-w-sm">
                   Experience the pinnacle of Ayurvedic luxury. Reach out to our concierge for personalized skincare rituals and inquiries.
                 </p>
@@ -387,7 +387,7 @@ export default function Home() {
                   <div className="relative">
                     <textarea placeholder="YOUR MESSAGE" rows={3} className="w-full bg-transparent border-b border-white/20 pb-4 text-[10px] md:text-xs tracking-[0.3em] text-white focus:outline-none focus:border-yellow-500 transition-colors placeholder:text-white/30 resize-none" />
                   </div>
-                  <button className="group relative overflow-hidden px-12 py-5 border border-yellow-600/50 bg-transparent text-[10px] tracking-[0.3em] text-yellow-500 transition-all duration-700 hover:border-yellow-500 hover:text-white w-max mt-4">
+                  <button className="group relative overflow-hidden px-12 py-5 border border-yellow-600/50 bg-transparent text-[10px] tracking-[0.3em] text-yellow-500 transition-all duration-700 hover:border-yellow-500 hover:text-white w-max mt-4 mx-auto md:mx-0">
                     <span className="relative z-10">SEND INQUIRY</span>
                     <div className="absolute inset-0 h-full w-full translate-y-full bg-yellow-900/40 transition-transform duration-700 ease-out group-hover:translate-y-0" />
                   </button>
