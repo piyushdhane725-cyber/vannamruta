@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 export default function Home() {
   const [phase, setPhase] = useState<1 | 2 | 3>(1);
   const [showContent, setShowContent] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0, clientX: 0, clientY: 0 });
 
   // References to videos
   const introVideoRef = useRef<HTMLVideoElement>(null);
@@ -129,10 +129,12 @@ export default function Home() {
   }, [phase]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    // Calculate normalized mouse position (-1 to 1)
-    const x = (e.clientX / (typeof window !== 'undefined' ? window.innerWidth : 1000)) * 2 - 1;
-    const y = (e.clientY / (typeof window !== 'undefined' ? window.innerHeight : 1000)) * 2 - 1;
-    setMousePos({ x, y });
+    // Calculate normalized mouse position (-1 to 1) for parallax
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    const x = (clientX / (typeof window !== 'undefined' ? window.innerWidth : 1000)) * 2 - 1;
+    const y = (clientY / (typeof window !== 'undefined' ? window.innerHeight : 1000)) * 2 - 1;
+    setMousePos({ x, y, clientX, clientY });
   };
 
   return (
@@ -182,6 +184,16 @@ export default function Home() {
         
         {/* Dark gradient overlay: vignette on mobile, left-fade on desktop to protect text */}
         <div className={`absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80 md:bg-gradient-to-r md:from-black/90 md:via-black/40 md:to-transparent z-20 pointer-events-none transition-opacity duration-[3000ms] ${phase === 3 ? 'opacity-100' : 'opacity-0'}`} />
+        
+        {/* Interactive Spotlight Overlay (Makes the metallic bottle react to mouse) */}
+        {phase === 3 && (
+          <div 
+            className="hidden md:block absolute inset-0 z-20 pointer-events-none mix-blend-color-dodge transition-all duration-75 ease-linear"
+            style={{
+              background: `radial-gradient(circle 800px at ${mousePos.clientX}px ${mousePos.clientY}px, rgba(255, 200, 0, 0.15), transparent 70%)`
+            }}
+          />
+        )}
       </div>
 
       {/* FIXED HEADER */}
@@ -241,7 +253,11 @@ export default function Home() {
               >
                 
                 {/* TOP GROUP (Title) */}
-                <div className="flex flex-col items-center md:items-start w-full">
+                <motion.div 
+                  className="flex flex-col items-center md:items-start w-full"
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                >
                   <motion.p 
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -261,10 +277,14 @@ export default function Home() {
                     Kumkumadi<br/>
                     <span className="italic text-yellow-100/90 ml-0 md:ml-16 block md:inline">Taila</span>
                   </motion.h1>
-                </div>
+                </motion.div>
 
                 {/* BOTTOM GROUP (Description, Price, Button) */}
-                <div className="flex flex-col items-center md:items-start w-full mt-auto md:mt-10">
+                <motion.div 
+                  className="flex flex-col items-center md:items-start w-full mt-auto md:mt-10"
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ repeat: Infinity, duration: 7, ease: "easeInOut", delay: 1 }}
+                >
                   <motion.div 
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
@@ -297,7 +317,7 @@ export default function Home() {
                       INR 1,999
                     </span>
                   </motion.div>
-                </div>
+                </motion.div>
 
               </motion.div>
             </motion.div>
