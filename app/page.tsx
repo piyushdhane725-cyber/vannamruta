@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingCart } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function Home() {
@@ -154,18 +155,19 @@ export default function Home() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: phase === 3 ? 1 : 0 }}
           transition={{ duration: 1.6, delay: 0.8, ease: "easeOut" }}
-          className="fixed top-0 left-0 w-full p-6 md:p-12 flex justify-between items-center z-50 pointer-events-none"
+          className="fixed top-0 left-0 w-full p-6 md:p-10 flex justify-between items-center z-50 pointer-events-none"
         >
-          <div className="text-xs md:text-sm tracking-[0.4em] text-yellow-500/90 uppercase">Vannamruta</div>
-          <div
-            className="text-[10px] md:text-xs tracking-[0.2em] text-white/60 hover:text-white transition-colors cursor-pointer pointer-events-auto"
+          <div className="text-sm md:text-xl tracking-[0.45em] text-yellow-500/90 uppercase font-semibold drop-shadow-[0_0_18px_rgba(255,215,0,0.18)]">Vannamruta</div>
+          <button
+            type="button"
+            aria-label="Open collection"
+            className="pointer-events-auto rounded-full border border-white/10 bg-black/40 p-3 text-white/80 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl transition hover:border-yellow-500/40 hover:bg-yellow-500/10 hover:text-white"
             onClick={() => {
-              // Direct smooth scroll to shop
               document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" });
             }}
           >
-            SHOP
-          </div>
+            <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
+          </button>
         </motion.header>
 
         {/* INITIAL SCREEN FOR PHASE 1 (Tagline) */}
@@ -203,7 +205,7 @@ export default function Home() {
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-between pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
                 <motion.div
-                  className="w-full h-full md:h-auto max-w-xl xl:max-w-2xl flex flex-col justify-between md:justify-start items-center text-center md:items-start md:text-left mx-auto md:mx-0"
+                  className="w-full h-full md:h-auto max-w-6xl mx-auto flex flex-col justify-between md:justify-start items-center text-center md:items-start md:text-left"
                 >
                   {/* TOP GROUP (Title) */}
                   <motion.div
@@ -215,7 +217,7 @@ export default function Home() {
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ duration: 1.2, delay: 0.1 }}
-                      className="text-[10px] md:text-xs tracking-[0.5em] text-yellow-500/90 mb-4 md:mb-8 uppercase font-light"
+                      className="text-[10px] md:text-xs tracking-[0.45em] text-yellow-500/90 mb-4 md:mb-6 uppercase font-light"
                     >
                       The Legendary Ayurvedic Elixir
                     </motion.p>
@@ -224,10 +226,10 @@ export default function Home() {
                       initial={{ y: 30, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ duration: 1.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                      className="text-5xl md:text-8xl lg:text-[100px] font-light tracking-wide text-white leading-[1.05] drop-shadow-[0_0_40px_rgba(255,255,255,0.18)] font-serif"
+                      className="text-[56px] md:text-[84px] lg:text-[110px] font-semibold tracking-[0.18em] text-white leading-[1.02] drop-shadow-[0_0_40px_rgba(255,255,255,0.18)] font-serif uppercase"
                     >
-                      Kumkumadi<br />
-                      <span className="italic text-yellow-100/90 ml-0 md:ml-16 block md:inline">Taila</span>
+                      Kumkumadi
+                      <span className="block md:inline italic text-yellow-100/95 md:ml-5">Taila</span>
                     </motion.h1>
                   </motion.div>
 
@@ -278,7 +280,7 @@ export default function Home() {
                       <span className="text-white/75">COSMOPOLITAN</span>
                     </motion.div>
 
-                    <div className="w-full grid gap-6 md:grid-cols-[1fr_380px] md:items-end">
+                    <div className="w-full grid gap-8 md:grid-cols-[1fr_420px] md:items-center">
                       <motion.div
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
@@ -306,15 +308,16 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1.1, delay: 0.6, ease: "easeOut" }}
                         whileHover={{ y: -4, scale: 1.01 }}
-                        className="mx-auto w-full max-w-sm rounded-[28px] border border-white/10 bg-black/45 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+                        className="mx-auto w-full max-w-sm rounded-[30px] border border-white/10 bg-black/45 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl md:ml-auto md:mr-0"
                       >
                         <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Featured Elixir</p>
                         <div className="mt-4 rounded-[24px] border border-white/8 bg-[linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4">
-                          <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] border border-white/8 bg-[#090909]">
+                          <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] border border-white/8 bg-[linear-gradient(145deg,#131313,#060606)]">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_35%)]" />
                             <img
                               src="/images/product.png"
                               alt="Kumkumadi Taila bottle"
-                              className="h-full w-full object-contain p-4 drop-shadow-[0_18px_30px_rgba(255,215,0,0.12)]"
+                              className="relative z-10 h-full w-full object-contain p-4 drop-shadow-[0_18px_35px_rgba(255,215,0,0.18)]"
                             />
                           </div>
                         </div>
