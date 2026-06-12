@@ -16,8 +16,20 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vanaamruta - Kumkumadi Taila",
-  description: "Luxury Ayurvedic Facial Elixir",
+  title: "Vannamruta | Luxury Ayurvedic Elixir",
+  description: "Discover the celebrated Kumkumadi Taila ritual with a refined shopping experience, premium product details, and concierge support.",
+  keywords: ["Kumkumadi Taila", "Ayurvedic skincare", "luxury beauty", "saffron elixir", "Vannamruta"],
+  openGraph: {
+    title: "Vannamruta | Luxury Ayurvedic Elixir",
+    description: "A cinematic, luxury-first shopping experience for the legendary Kumkumadi Taila ritual.",
+    type: "website",
+    siteName: "Vannamruta",
+  },
+};
+
+export const viewport = {
+  themeColor: "#050505",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
