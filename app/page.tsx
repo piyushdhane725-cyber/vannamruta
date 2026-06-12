@@ -7,6 +7,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 export default function Home() {
   const [phase, setPhase] = useState<1 | 3>(1);
   const [showContent, setShowContent] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Shopify integration states
   const [productData, setProductData] = useState<{
@@ -100,9 +102,25 @@ export default function Home() {
 
       heroVideo.currentTime = 0;
       heroVideo.play().catch(e => console.log("Hero play error:", e));
-      setShowContent(true); // Trigger product appearance immediately
+      setShowContent(true);
     }
   }, [phase]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY || 0;
+      const maxY = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = maxY > 0 ? Math.min(currentY / maxY, 1) : 0;
+
+      setScrollY(currentY);
+      setScrollProgress(progress);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <>
@@ -112,7 +130,11 @@ export default function Home() {
       >
         {/* FIXED BACKGROUND VIDEOS (CONDITIONAL MOUNTING TO ELIMINATE LAG) */}
         <div className="fixed inset-0 z-0 h-full w-full overflow-hidden bg-black">
-          <motion.div className="absolute inset-0 h-full w-full">
+          <motion.div
+            className="absolute inset-0 h-full w-full"
+            animate={{ y: scrollY * 0.04 }}
+            transition={{ type: "spring", stiffness: 60, damping: 20 }}
+          >
             {phase === 1 && (
               <video
                 ref={introVideoRef}
@@ -148,6 +170,14 @@ export default function Home() {
           </motion.div>
           {/* Dark gradient overlay: vignette on mobile, left-fade on desktop to protect text */}
           <div className={`absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80 md:bg-gradient-to-r md:from-black md:via-black/50 md:to-transparent z-20 pointer-events-none transition-opacity duration-[3000ms] ${phase === 3 ? "opacity-100" : "opacity-0"}`} />
+        </div>
+
+        <div className="fixed top-0 left-0 z-[60] h-[2px] w-full bg-white/5" aria-hidden="true">
+          <motion.div
+            className="h-full bg-gradient-to-r from-yellow-500/90 via-amber-300/80 to-yellow-100"
+            animate={{ width: `${scrollProgress * 100}%` }}
+            transition={{ type: "spring", stiffness: 70, damping: 24 }}
+          />
         </div>
 
         {/* FIXED HEADER */}
@@ -206,6 +236,7 @@ export default function Home() {
               >
                 <motion.div
                   className="w-full h-full md:h-auto max-w-6xl mx-auto flex flex-col justify-between md:justify-start items-center text-center md:items-start md:text-left"
+                  style={{ y: scrollY * 0.03 }}
                 >
                   {/* TOP GROUP (Title) */}
                   <motion.div
@@ -308,6 +339,7 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1.1, delay: 0.6, ease: "easeOut" }}
                         whileHover={{ y: -4, scale: 1.01 }}
+                        style={{ y: Math.min(scrollY * 0.03, 24) }}
                         className="mx-auto w-full max-w-sm rounded-[30px] border border-white/10 bg-black/45 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl md:ml-auto md:mr-0"
                       >
                         <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Featured Elixir</p>
@@ -383,8 +415,16 @@ export default function Home() {
                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 viewport={{ once: true, margin: "-100px" }}
                 className="max-w-7xl mx-auto"
+                style={{ y: scrollY * 0.02 }}
               >
-                <div className="text-center mb-20 md:mb-32">
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.8 }}
+                  className="text-center mb-20 md:mb-32"
+                  style={{ y: scrollY * 0.02 }}
+                >
                   <p className="text-yellow-500/80 tracking-[0.4em] text-xs uppercase mb-6 font-light">The Boutique</p>
                   <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-10 font-serif">
                     Curated Masterpieces
@@ -393,18 +433,25 @@ export default function Home() {
                   <p className="mt-8 max-w-3xl mx-auto text-white/65 text-sm md:text-base leading-relaxed tracking-[0.08em] uppercase">
                     A refined ritual experience with real-time product availability, luxury packaging, and concierge support.
                   </p>
-                </div>
+                </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-20">
                   {[
                     ["Saffron-Infused", "Rare Kashmiri saffron blended with botanical oils for luminous, balanced glow."],
                     ["Fast Concierge", "Personalized guidance for rituals, gifting, and order assistance in under one day."],
                     ["Authentic Luxury", "Small-batch craftsmanship with premium packaging and a polished checkout flow."],
-                  ].map(([title, text]) => (
-                    <article key={title} className="rounded-2xl border border-white/8 bg-white/4 p-6 text-left shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+                  ].map(([title, text], index) => (
+                    <motion.article
+                      key={title}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, y: 18 }}
+                      viewport={{ once: true, amount: 0.35 }}
+                      transition={{ duration: 0.7, delay: index * 0.08 }}
+                      className="rounded-2xl border border-white/8 bg-white/4 p-6 text-left shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+                    >
                       <p className="text-[10px] tracking-[0.35em] text-yellow-500/90 uppercase mb-4">{title}</p>
                       <p className="text-sm text-white/70 leading-6">{text}</p>
-                    </article>
+                    </motion.article>
                   ))}
                 </div>
 
@@ -414,6 +461,7 @@ export default function Home() {
                   <motion.div
                     whileHover={{ y: -8, rotateX: 1, rotateY: -1 }}
                     transition={{ type: "spring", stiffness: 180, damping: 18 }}
+                    style={{ y: Math.min(scrollY * 0.02, 18) }}
                     className="flex flex-col items-center text-center group cursor-pointer"
                   >
                     <div className="relative w-full aspect-[3/4] bg-[#0a0a0a] border border-white/5 overflow-hidden mb-8 flex items-center justify-center group-hover:border-yellow-600/30 transition-colors duration-700">
@@ -490,6 +538,7 @@ export default function Home() {
                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 viewport={{ once: true, margin: "-100px" }}
                 className="text-center max-w-4xl mx-auto"
+                style={{ y: scrollY * 0.03 }}
               >
                 <p className="text-yellow-500/80 tracking-[0.4em] text-xs uppercase mb-6 font-light">The Legacy</p>
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-10 font-serif">
