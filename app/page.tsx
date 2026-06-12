@@ -408,7 +408,7 @@ export default function Home() {
         {/* MORE CONTENT TO SCROLL TO */}
         {phase === 3 && showContent && (
           <div className="relative z-30 w-full bg-[#030303] pointer-events-auto border-t border-white/5">
-            {/* Section 1: The Collection (Boutique) */}
+            {/* Section 1: Luxury Ritual / Brand Statement */}
             <div id="collection" className="min-h-[100dvh] w-full py-24 md:py-32 px-6 border-b border-white/5 bg-[#030303]">
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
@@ -428,11 +428,11 @@ export default function Home() {
                 >
                   <p className="text-yellow-500/80 tracking-[0.4em] text-xs uppercase mb-6 font-light">The Boutique</p>
                   <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-10 font-serif">
-                    Curated Masterpieces
+                    A Ritual Worth Slowing Down For
                   </h2>
                   <div className="w-12 h-[1px] bg-yellow-600/50 mx-auto" />
                   <p className="mt-8 max-w-3xl mx-auto text-white/65 text-sm md:text-base leading-relaxed tracking-[0.08em] uppercase">
-                    A refined ritual experience with real-time product availability, luxury packaging, and concierge support.
+                    A refined ritual experience with luminous texture, slow craftsmanship, and the quiet confidence of a true luxury brand.
                   </p>
                 </motion.div>
 
@@ -531,7 +531,7 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Section 2: The Legacy */}
+            {/* Section 2: Scroll Story / Brand Statement */}
             <div className="min-h-[100dvh] w-full flex items-center justify-center px-6 border-b border-white/5">
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
@@ -541,15 +541,14 @@ export default function Home() {
                 className="text-center max-w-4xl mx-auto"
                 style={{ y: scrollY * 0.03 }}
               >
-                <p className="text-yellow-500/80 tracking-[0.4em] text-xs uppercase mb-6 font-light">The Legacy</p>
+                <p className="text-yellow-500/80 tracking-[0.4em] text-xs uppercase mb-6 font-light">Crafted for the modern ritual</p>
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-10 font-serif">
-                  The Ritual of Royalty
+                  Crafted from 21 Ayurvedic ingredients.
                 </h2>
                 <div className="w-12 h-[1px] bg-yellow-600/50 mx-auto mb-10" />
                 <p className="text-white/60 tracking-[0.1em] text-base md:text-xl font-light leading-loose md:leading-loose">
-                  For centuries, Kumkumadi Taila has been the best-kept secret of Indian royalty.
-                  A precise formulation of 21 rare herbs, goat&apos;s milk, and pure Kashmiri saffron,
-                  slow-cooked to perfection over days to capture the essence of youth.
+                  Every drop is shaped by centuries of royal skincare wisdom, rare botanicals, and patient craftsmanship.
+                  The result is a luminous ritual that feels as indulgent as it is restorative.
                 </p>
               </motion.div>
             </div>
@@ -583,7 +582,7 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Section 4: Ingredients */}
+            {/* Section 4: Ingredients Story */}
             <div className="w-full py-24 md:py-32 px-6 border-b border-white/5 bg-[#020202]">
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
@@ -593,26 +592,59 @@ export default function Home() {
                 className="max-w-7xl mx-auto"
               >
                 <div className="mb-14 text-center md:text-left">
-                  <p className="text-yellow-500/80 tracking-[0.35em] text-xs uppercase mb-5 font-light">Ingredients</p>
-                  <h2 className="text-3xl md:text-5xl font-light text-white font-serif">A careful blend of rare botanicals</h2>
+                  <p className="text-yellow-500/80 tracking-[0.35em] text-xs uppercase mb-5 font-light">Ingredients Story</p>
+                  <h2 className="text-3xl md:text-5xl font-light text-white font-serif">Every ingredient is chosen for glow, softness, and ritual.</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[
-                    ["Kashmiri Saffron", "A luminous, golden note that gives the formula its signature glow."],
-                    ["Lotus Extract", "Known for softness, calmness, and a silky finish."],
-                    ["Sandalwood", "A grounding ingredient with a warm, velvety aromatic profile."],
-                    ["Goat&apos;s Milk", "Traditionally used to nurture and support skin comfort."],
-                  ].map(([title, text]) => (
-                    <article key={title} className="rounded-3xl border border-white/8 bg-white/4 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-700 hover:-translate-y-1 hover:border-yellow-600/30">
-                      <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">{title}</p>
-                      <p className="mt-4 text-sm text-white/70 leading-6">{text}</p>
-                    </article>
+                    ["Kashmiri Saffron", "Golden brilliance and luminous warmth in every drop.", "from-[#2b2215] via-[#1b140d] to-black"],
+                    ["Blue Lotus", "A calm, silky finish that feels deeply restorative.", "from-[#18262d] via-[#091016] to-black"],
+                    ["Sandalwood", "A soft, grounding note that completes the royal finish.", "from-[#261d12] via-[#120f09] to-black"],
+                  ].map(([title, text, gradient], index) => (
+                    <motion.article
+                      key={title}
+                      initial={{ opacity: 0, y: 18 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.25 }}
+                      transition={{ duration: 0.8, delay: index * 0.08 }}
+                      className="group rounded-[30px] border border-white/8 bg-white/4 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl overflow-hidden"
+                    >
+                      <div className={`rounded-[24px] border border-white/8 bg-gradient-to-br ${gradient} p-6 min-h-[260px] flex flex-col justify-between transition-transform duration-700 group-hover:scale-[1.02]`}>
+                        <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Ingredient {index + 1}</p>
+                        <div>
+                          <p className="text-2xl md:text-3xl font-serif text-white">{title}</p>
+                          <p className="mt-4 max-w-xs text-sm text-white/70 leading-6">{text}</p>
+                        </div>
+                      </div>
+                    </motion.article>
                   ))}
                 </div>
               </motion.div>
             </div>
 
-            {/* Section 5: Reviews + FAQ */}
+            {/* Section 5: Luxury Statistics */}
+            <div className="w-full py-24 md:py-32 px-6 border-b border-white/5 bg-[#040404]">
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                viewport={{ once: true, amount: 0.25 }}
+                className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6"
+              >
+                {[
+                  ["21", "Ayurvedic ingredients"],
+                  ["100%", "Natural formulation"],
+                  ["500+", "Years of tradition"],
+                ].map(([value, label], index) => (
+                  <article key={label} className="rounded-[30px] border border-white/8 bg-white/4 p-8 text-center shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl" style={{ transform: `translateY(${index * 4}px)` }}>
+                    <p className="text-5xl md:text-6xl font-semibold tracking-[0.12em] text-yellow-100 font-serif">{value}</p>
+                    <p className="mt-4 text-[10px] uppercase tracking-[0.35em] text-white/60">{label}</p>
+                  </article>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Section 6: Reviews */}
             <div className="w-full py-24 md:py-32 px-6 border-b border-white/5 bg-[#030303]">
               <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-10">
                 <motion.div
@@ -623,17 +655,11 @@ export default function Home() {
                   className="rounded-[30px] border border-white/8 bg-white/4 p-8 md:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl"
                 >
                   <p className="text-yellow-500/80 tracking-[0.35em] text-xs uppercase mb-5 font-light">Reviews</p>
-                  <h2 className="text-3xl md:text-5xl font-light text-white font-serif">What ritual lovers notice first</h2>
-                  <div className="mt-8 space-y-6">
-                    {[
-                      ['“The glow feels luxurious, but also deeply calming. It feels like a ritual rather than a routine.”', '— Asha, Mumbai'],
-                      ['“The bottle and the experience are beautiful, but the finish is what keeps me coming back.”', '— Naina, Bengaluru'],
-                    ].map(([quote, name]) => (
-                      <article key={quote} className="rounded-3xl border border-white/8 bg-black/40 p-6">
-                        <p className="text-white/80 text-sm md:text-base leading-7">{quote}</p>
-                        <p className="mt-4 text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">{name}</p>
-                      </article>
-                    ))}
+                  <h2 className="text-3xl md:text-5xl font-light text-white font-serif">The most luxurious ritual many first-time users keep coming back to.</h2>
+                  <div className="mt-8 rounded-[30px] border border-white/8 bg-black/40 p-8 md:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+                    <p className="text-[11px] uppercase tracking-[0.35em] text-yellow-500/80">★★★★★</p>
+                    <p className="mt-5 text-white/85 text-xl md:text-2xl leading-9 font-light">“The glow feels rare, calm, and unmistakably luxurious. It looks beautiful on the shelf and feels even better on the skin.”</p>
+                    <p className="mt-6 text-[10px] uppercase tracking-[0.35em] text-white/55">— Priya S., Mumbai</p>
                   </div>
                 </motion.div>
 
@@ -662,7 +688,32 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Section 2: Contact & Footer */}
+            {/* Section 7: Founder Story */}
+            <div className="w-full py-24 md:py-32 px-6 border-b border-white/5 bg-[#020202]">
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                viewport={{ once: true, amount: 0.25 }}
+                className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center"
+              >
+                <div className="rounded-[30px] border border-white/8 bg-[linear-gradient(145deg,#151515,#080808)] p-8 md:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+                  <p className="text-yellow-500/80 tracking-[0.35em] text-xs uppercase mb-5 font-light">Founder Story</p>
+                  <h2 className="text-3xl md:text-5xl font-light text-white font-serif">The origin of Vannamruta</h2>
+                  <p className="mt-6 text-white/65 text-sm md:text-base leading-7 tracking-[0.04em]">Vannamruta was born from the idea that radiance should feel ceremonial, not rushed. Every formula is shaped with old-world respect for botanicals and a modern eye for the quiet luxury of the ritual itself.</p>
+                </div>
+                <div className="rounded-[30px] border border-white/8 bg-[linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-8 md:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Why it feels premium</p>
+                  <ul className="mt-6 space-y-4 text-sm text-white/70 leading-6">
+                    <li>• Slow, minimal motion and elegant pacing.</li>
+                    <li>• Product-led storytelling with visible bottle focus.</li>
+                    <li>• Calm typography and premium spacing throughout.</li>
+                  </ul>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Section 8: Contact & Footer */}
             <div className="w-full bg-[#030303] py-24 md:py-32 px-6">
               <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20">
                 {/* Contact Info */}
@@ -674,11 +725,11 @@ export default function Home() {
                   className="flex flex-col justify-center items-center text-center md:items-start md:text-left"
                 >
                   <h3 className="text-3xl md:text-5xl font-light text-white mb-8 font-serif">
-                    Connect With Us
+                    Begin Your Ritual
                   </h3>
                   <div className="w-12 h-[1px] bg-yellow-600/50 mb-10 mx-auto md:mx-0" />
                   <p className="text-white/50 tracking-wider font-light leading-relaxed mb-8 max-w-sm">
-                    Experience the pinnacle of Ayurvedic luxury. Reach out to our concierge for personalized skincare rituals and inquiries.
+                    Speak with our concierge for tailored ritual guidance, gifting recommendations, and private product support.
                   </p>
                   <div className="space-y-4 text-xs tracking-[0.2em] text-yellow-100/70 font-light uppercase">
                     <p className="hover:text-yellow-500 transition-colors cursor-pointer">concierge@vannamruta.com</p>
