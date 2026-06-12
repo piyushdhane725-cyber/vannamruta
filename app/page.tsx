@@ -142,10 +142,10 @@ export default function Home() {
                 muted
                 playsInline
                 preload="auto"
-                poster="/images/luxury-bg.jpg"
+                poster="/images/hero-poster.jpg"
                 disablePictureInPicture
                 style={{ backfaceVisibility: "hidden" }}
-                className="absolute inset-0 h-full w-full object-cover transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1200ms] ease-in-out opacity-100 z-10"
+                className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1200ms] ease-in-out opacity-100 z-10"
               >
                 <source src="/videos/gold-particles.mp4" type="video/mp4" />
               </video>
@@ -159,17 +159,18 @@ export default function Home() {
                 loop
                 playsInline
                 preload="auto"
-                poster="/images/luxury-bg.jpg"
+                poster="/images/hero-poster.jpg"
                 disablePictureInPicture
                 style={{ backfaceVisibility: "hidden" }}
-                className="absolute inset-0 h-full w-full object-cover transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1800ms] ease-in-out opacity-90 z-10"
+                className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1800ms] ease-in-out opacity-90 z-10"
               >
                 <source src="/videos/hero-bg.mp4" type="video/mp4" />
               </video>
             )}
           </motion.div>
           {/* Dark gradient overlay: vignette on mobile, left-fade on desktop to protect text */}
-          <div className={`absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80 md:bg-gradient-to-r md:from-black md:via-black/50 md:to-transparent z-20 pointer-events-none transition-opacity duration-[3000ms] ${phase === 3 ? "opacity-100" : "opacity-0"}`} />
+          <div className={`absolute inset-0 bg-gradient-to-b from-black/82 via-black/25 to-black/90 md:bg-gradient-to-r md:from-black/90 md:via-black/45 md:to-black/75 z-20 pointer-events-none transition-opacity duration-[3000ms] ${phase === 3 ? "opacity-100" : "opacity-0"}`} />
+          <div className="absolute inset-0 z-20 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_24%),linear-gradient(135deg,rgba(0,0,0,0.12),transparent_30%,rgba(0,0,0,0.45))]" />
         </div>
 
         <div className="fixed top-0 left-0 z-[60] h-[2px] w-full bg-white/5" aria-hidden="true">
@@ -240,7 +241,7 @@ export default function Home() {
                 >
                   {/* TOP GROUP (Title) */}
                   <motion.div
-                    className="flex flex-col items-center md:items-start w-full"
+                    className="w-full rounded-[32px] border border-white/10 bg-black/25 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-2xl md:max-w-3xl md:p-8"
                     whileHover={{ y: -2 }}
                     transition={{ duration: 0.6 }}
                   >
@@ -266,7 +267,7 @@ export default function Home() {
 
                   {/* BOTTOM GROUP (Description, Proof, Product Preview) */}
                   <motion.div
-                    className="flex flex-col items-center md:items-start w-full mt-auto md:mt-10"
+                    className="mt-auto flex w-full flex-col items-center rounded-[30px] border border-white/10 bg-black/25 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-2xl md:mt-10 md:items-start md:p-6"
                     transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <motion.div
@@ -340,7 +341,7 @@ export default function Home() {
                         transition={{ duration: 1.1, delay: 0.6, ease: "easeOut" }}
                         whileHover={{ y: -4, scale: 1.01 }}
                         style={{ y: Math.min(scrollY * 0.03, 24) }}
-                        className="mx-auto w-full max-w-sm rounded-[30px] border border-white/10 bg-black/45 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl md:ml-auto md:mr-0"
+                        className="mx-auto w-full max-w-sm rounded-[30px] border border-white/10 bg-black/55 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl ring-1 ring-white/10 md:ml-auto md:mr-0"
                       >
                         <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Featured Elixir</p>
                         <div className="mt-4 rounded-[24px] border border-white/8 bg-[linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4">
