@@ -38,7 +38,7 @@ export default function Home() {
   const heroTitleOpacity = useTransform(scrollY, [0, 450], [1, 0.18]);
   const bottleFloat = useTransform(scrollY, [0, 900], [0, -18]);
   const sectionParallax = useTransform(scrollY, [0, 1200], [0, -24]);
-  const floatingStageTimes = [0.04, 0.06, 0.1];
+  const floatingStageTimes = [0, 0.06, 0.1];
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -63,16 +63,20 @@ export default function Home() {
   }, []);
   const floatingStageText = [
     {
-      headline: "The bottle lifts into ritual motion.",
-      description: "On the first scroll, the bottle lifts into a slanted position and the right-side text appears in a calm luxury panel.",
+      // initial (no overlay)
+      headline: "",
+      description: "",
     },
     {
-      headline: "The bottle pauses in a refined tilt.",
-      description: "The second scroll holds the animation at 0.06s and displays benefit and research copy beside the product.",
+      // first scroll stop at 0.06s — show left & right complementary copy
+      headline: "Saffron Heritage",
+      description:
+        "Rare Kashmiri saffron and botanical oils for luminous, velvety skin.\n\nCrafted Slowly\n\nSmall-batch formulation with quiet luxury and thoughtful texture.\n\nSecure Checkout\n\nA polished buy flow with concierge support and premium confidence.",
     },
     {
-      headline: "A calm acquisition stage.",
-      description: "The final scroll lands the flip frame at 0.10s and reveals a premium order panel without covering the bottle.",
+      // second scroll stop at 0.10s — acquisition stage
+      headline: "Acquire the Elixir",
+      description: "The elixir appears as part of the ritual — tap to buy and begin your ceremony.",
     },
   ][floatingStage];
 
@@ -275,22 +279,33 @@ export default function Home() {
         {/* FIXED HEADER */}
         <motion.header
           initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: phase === 3 ? 1 : 0 }}
-          transition={{ duration: 1.6, delay: 0.8, ease: "easeOut" }}
-          className="fixed top-0 left-0 w-full p-6 md:p-10 flex justify-between items-center z-50 pointer-events-none"
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+          className="fixed top-0 left-0 w-full p-6 md:p-8 flex items-center z-50 pointer-events-none"
         >
-          <div className="text-sm md:text-xl tracking-[0.45em] text-yellow-500/90 uppercase font-semibold drop-shadow-[0_0_18px_rgba(255,215,0,0.18)]">Vannamruta</div>
-          <button
-            type="button"
-            aria-label="Open collection"
-            className="pointer-events-auto rounded-full border border-white/10 bg-black/40 p-3 text-white/80 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl transition hover:border-yellow-500/40 hover:bg-yellow-500/10 hover:text-white"
-            onClick={() => {
-              document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" });
-            }}
-          >
-            <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
+          <div className="absolute left-1/2 -translate-x-1/2 text-sm md:text-xl tracking-[0.45em] text-yellow-500/90 uppercase font-semibold drop-shadow-[0_0_18px_rgba(255,215,0,0.18)] pointer-events-none">
+            Vanaamruta
+          </div>
         </motion.header>
+
+        {/* Right-side product / purchase panel (avoids covering the bottle) */}
+        {phase >= 2 && (
+          <div className="fixed right-6 top-1/3 z-50 pointer-events-auto max-w-[340px]">
+            <div className="rounded-2xl bg-black/60 border border-white/6 p-6 backdrop-blur-2xl shadow-xl text-right">
+              <div className="text-xs text-white/70 tracking-wider uppercase">Kumkumadi Taila</div>
+              <div className="mt-2 text-2xl font-semibold">{productData ? `${productData.currency}${productData.price}` : isFetchingProduct ? "Loading…" : "—"}</div>
+              <div className="mt-3 text-sm text-white/70">A ritual oil for luminous skin. Avoids covering the hero bottle during animation.</div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => handleAcquireNow(false)}
+                  className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-yellow-500/95 px-4 py-2 text-black font-semibold shadow-lg"
+                >
+                  Buy
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* INITIAL SCREEN FOR PHASE 1 (Tagline) */}
         <div className="absolute inset-0 z-30 min-h-[100dvh] w-full flex items-center justify-center pointer-events-none">
@@ -427,6 +442,50 @@ export default function Home() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Floating video stage overlays (left + right) — appear only during phase 3 */}
+          {phase === 3 && (
+            <>
+              {/* Left ritual / acquisition panel */}
+              <div className="fixed left-6 bottom-1/4 z-50 pointer-events-auto max-w-[420px]">
+                {floatingStage === 1 && (
+                  <div className="rounded-2xl bg-black/60 border border-white/6 p-6 backdrop-blur-2xl shadow-xl text-left">
+                    <h3 className="text-xl font-semibold">Saffron Heritage</h3>
+                    <p className="mt-3 text-sm text-white/70 whitespace-pre-line">Rare Kashmiri saffron and botanical oils for luminous, velvety skin.\n\nCrafted Slowly\n\nSmall-batch formulation with quiet luxury and thoughtful texture.\n\nSecure Checkout\n\nA polished buy flow with concierge support and premium confidence.</p>
+                  </div>
+                )}
+
+                {floatingStage === 2 && (
+                  <div className="rounded-2xl bg-black/60 border border-white/6 p-6 backdrop-blur-2xl shadow-xl text-left">
+                    <h3 className="text-2xl font-semibold">Acquire the Elixir</h3>
+                    <p className="mt-3 text-sm text-white/70">The elixir appears as part of the ritual — the left panel becomes the purchase anchor.</p>
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleAcquireNow(false)}
+                        className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-yellow-500/95 px-4 py-2 text-black font-semibold shadow-lg"
+                      >
+                        Buy the Elixir
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right stats panel for the first stage */}
+              <div className="fixed right-6 top-1/3 z-50 pointer-events-auto max-w-[220px] text-right">
+                {floatingStage === 1 && (
+                  <div className="rounded-2xl bg-black/60 border border-white/6 p-4 backdrop-blur-2xl shadow-xl">
+                    <div className="text-3xl font-bold">21</div>
+                    <div className="text-xs text-white/70">Ayurvedic ingredients</div>
+                    <div className="mt-4 text-3xl font-bold">100%</div>
+                    <div className="text-xs text-white/70">Natural formulation</div>
+                    <div className="mt-4 text-3xl font-bold">500+</div>
+                    <div className="text-xs text-white/70">Years of tradition</div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Scroll indicator */}
