@@ -11,8 +11,9 @@ import { ShoppingCart } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function Home() {
-  const [phase, setPhase] = useState<1 | 2 | 3>(1);
+  const [phase, setPhase] = useState<1 | 2 | 3 | 4>(1);
   const [showContent, setShowContent] = useState(false);
+  const [floatingComplete, setFloatingComplete] = useState(false);
 
   // Shopify integration states
   const [productData, setProductData] = useState<{
@@ -28,9 +29,8 @@ export default function Home() {
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const heroBgVideoRef = useRef<HTMLVideoElement>(null);
   const floatingVideoRef = useRef<HTMLVideoElement>(null);
-  const [heroBgDuration, setHeroBgDuration] = useState(0);
   const [floatingDuration, setFloatingDuration] = useState(0);
-  const [floatingStage, setFloatingStage] = useState(0);
+  const [floatingTransitioning, setFloatingTransitioning] = useState(false);
   const { scrollY, scrollYProgress } = useScroll();
 
   const backgroundParallax = useTransform(scrollY, [0, 900], [0, -30]);
@@ -38,7 +38,6 @@ export default function Home() {
   const heroTitleOpacity = useTransform(scrollY, [0, 450], [1, 0.18]);
   const bottleFloat = useTransform(scrollY, [0, 900], [0, -18]);
   const sectionParallax = useTransform(scrollY, [0, 1200], [0, -24]);
-  const floatingStageTimes = [0, 0.06, 0.1];
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -61,24 +60,6 @@ export default function Home() {
       lenis.destroy();
     };
   }, []);
-  const floatingStageText = [
-    {
-      // initial (no overlay)
-      headline: "",
-      description: "",
-    },
-    {
-      // first scroll stop at 0.06s — show left & right complementary copy
-      headline: "Saffron Heritage",
-      description:
-        "Rare Kashmiri saffron and botanical oils for luminous, velvety skin.\n\nCrafted Slowly\n\nSmall-batch formulation with quiet luxury and thoughtful texture.\n\nSecure Checkout\n\nA polished buy flow with concierge support and premium confidence.",
-    },
-    {
-      // second scroll stop at 0.10s — acquisition stage
-      headline: "Acquire the Elixir",
-      description: "The elixir appears as part of the ritual — tap to buy and begin your ceremony.",
-    },
-  ][floatingStage];
 
   useEffect(() => {
     const goldVideo = goldVideoRef.current;
@@ -117,7 +98,7 @@ export default function Home() {
       }
     }
 
-    if (phase === 3) {
+    if (phase === 4) {
       fetchProduct();
     }
   }, [phase]);
@@ -183,25 +164,54 @@ export default function Home() {
     const floatingVideo = floatingVideoRef.current;
     if (!floatingVideo) return;
 
-    const handleScroll = () => {
-      if (phase !== 3 || floatingDuration <= 0) return;
+    if (phase === 3) {
+      if (splashVideoRef.current) splashVideoRef.current.pause();
+      floatingVideo.currentTime = 0;
+      floatingVideo.play().catch((e) => console.log("Floating play error:", e));
+    }
 
-      const start = window.innerHeight * 0.5;
-      const stepHeight = window.innerHeight * 0.8;
-      const progress = Math.min(1, Math.max(0, (window.scrollY - start) / (stepHeight * 3)));
-      const stage = Math.min(2, Math.max(0, Math.floor(progress * 3)));
-      const targetTime = floatingStageTimes[stage] ?? floatingStageTimes[0];
+    const handleFloatingEnd = () => {
+      setFloatingComplete(true);
+      setPhase(4);
+    };
 
-      if (Math.abs(floatingVideo.currentTime - targetTime) > 0.001) {
-        floatingVideo.currentTime = targetTime;
+    const onTimeUpdate = () => {
+      if (!floatingDuration || floatingTransitioning) return;
+      if (floatingVideo.currentTime >= floatingDuration - 0.05) {
+        setFloatingComplete(true);
+        setPhase(4);
       }
-      setFloatingStage(stage);
+    };
+
+    floatingVideo.addEventListener("ended", handleFloatingEnd);
+    floatingVideo.addEventListener("timeupdate", onTimeUpdate);
+
+    return () => {
+      floatingVideo.removeEventListener("ended", handleFloatingEnd);
+      floatingVideo.removeEventListener("timeupdate", onTimeUpdate);
+    };
+  }, [phase, floatingDuration, floatingTransitioning]);
+
+  useEffect(() => {
+    const floatingVideo = floatingVideoRef.current;
+    if (!floatingVideo) return;
+
+    const handleScroll = () => {
+      if (phase !== 3 || floatingDuration <= 0 || floatingTransitioning) return;
+
+      if (window.scrollY > 5) {
+        setFloatingTransitioning(true);
+        const finalTime = Math.max(0, floatingDuration - 0.04);
+        floatingVideo.currentTime = finalTime;
+        floatingVideo.pause();
+        setPhase(4);
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [phase, floatingDuration]);
+  }, [phase, floatingDuration, floatingTransitioning]);
 
   return (
     <>
@@ -216,52 +226,69 @@ export default function Home() {
             style={{ y: backgroundParallax }}
             transition={{ type: "spring", stiffness: 60, damping: 20 }}
           >
-            {phase === 1 && (
-              <video
-                ref={goldVideoRef}
-                autoPlay
-                muted
-                playsInline
-                preload="auto"
-                poster="/images/hero-poster.jpg"
-                disablePictureInPicture
-                style={{ backfaceVisibility: "hidden" }}
-                className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1200ms] ease-in-out opacity-100 z-10"
-              >
-                <source src="/videos/gold-particles.mp4" type="video/mp4" />
-              </video>
-            )}
+            <AnimatePresence mode="wait">
+              {phase === 1 && (
+                <motion.video
+                  key="logo"
+                  ref={goldVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  preload="auto"
+                  poster="/images/hero-poster.jpg"
+                  disablePictureInPicture
+                  style={{ backfaceVisibility: "hidden" }}
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                  className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity z-10"
+                >
+                  <source src="/videos/gold-particles.mp4" type="video/mp4" />
+                </motion.video>
+              )}
 
-            {phase === 2 && (
-              <video
-                ref={splashVideoRef}
-                autoPlay
-                muted
-                playsInline
-                preload="auto"
-                poster="/images/hero-poster.jpg"
-                disablePictureInPicture
-                style={{ backfaceVisibility: "hidden" }}
-                className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1800ms] ease-in-out opacity-95 z-10"
-              >
-                <source src="/videos/hero-bg.mp4" type="video/mp4" />
-              </video>
-            )}
+              {phase === 2 && (
+                <motion.video
+                  key="splash"
+                  ref={splashVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  preload="auto"
+                  poster="/images/hero-poster.jpg"
+                  disablePictureInPicture
+                  style={{ backfaceVisibility: "hidden" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.2, ease: "easeInOut" }}
+                  className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity z-10"
+                >
+                  <source src="/videos/hero-bg.mp4" type="video/mp4" />
+                </motion.video>
+              )}
 
-            {phase === 3 && (
-              <video
-                ref={floatingVideoRef}
-                muted
-                playsInline
-                preload="auto"
-                poster="/images/hero-poster.jpg"
-                disablePictureInPicture
-                style={{ backfaceVisibility: "hidden" }}
-                className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1800ms] ease-in-out opacity-95 z-10"
-              >
-                <source src="/videos/floating annimation.mp4" type="video/mp4" />
-              </video>
-            )}
+              {phase === 3 && (
+                <motion.video
+                  key="floating"
+                  ref={floatingVideoRef}
+                  muted
+                  playsInline
+                  preload="auto"
+                  poster="/images/hero-poster.jpg"
+                  disablePictureInPicture
+                  style={{ backfaceVisibility: "hidden" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.2, ease: "easeInOut" }}
+                  className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity z-10"
+                >
+                  <source src="/videos/floating annimation.mp4" type="video/mp4" />
+                </motion.video>
+              )}
+            </AnimatePresence>
           </motion.div>
           {/* Dark gradient overlay: vignette on mobile, left-fade on desktop to protect text */}
           <div className={`absolute inset-0 bg-gradient-to-b from-black/82 via-black/25 to-black/90 md:bg-gradient-to-r md:from-black/90 md:via-black/45 md:to-black/75 z-20 pointer-events-none transition-opacity duration-[3000ms] ${phase === 3 ? "opacity-100" : "opacity-0"}`} />
@@ -351,26 +378,41 @@ export default function Home() {
 
             {phase === 3 && showContent && (
               <motion.div
-                key="hero-content"
-                initial={{ opacity: 0, x: -40 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 2.2, ease: [0.22, 1, 0.36, 1] }}
+                key="phase3-hero"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-center pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
+              >
+                <div className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-center justify-center text-center">
+                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-4 px-4 md:px-0">
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1.0, ease: "easeOut" }}
+                      className="max-w-2xl mt-[42vh]"
+                    >
+                      <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
+                      <p className="mt-4 text-white/70 text-sm md:text-base">An Ayurvedic elixir for luminous, velvety skin.</p>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {phase === 4 && showContent && (
+              <motion.div
+                key="phase4-hero"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-between pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
                 <motion.div
                   className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] items-center justify-center text-center"
                   style={{ y: heroLift, opacity: heroTitleOpacity }}
                 >
-                  <motion.div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-0 -top-20 z-0 h-[420px] hidden md:block"
-                    style={{ y: backgroundParallax }}
-                  >
-                    <div className="absolute left-0 top-0 h-64 w-64 rounded-full bg-yellow-400/12 blur-3xl" />
-                    <div className="absolute right-0 top-10 h-72 w-72 rounded-full bg-amber-200/8 blur-3xl" />
-                    <div className="absolute left-1/2 top-12 h-[180px] w-[60%] -translate-x-1/2 rounded-full border border-white/8 bg-[linear-gradient(120deg,rgba(255,255,255,0.04),transparent_50%,rgba(255,255,255,0.03))] shadow-[0_0_80px_rgba(255,215,0,0.08)]" />
-                  </motion.div>
-
                   <div className="relative z-10 w-full flex items-center justify-center">
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
@@ -392,7 +434,7 @@ export default function Home() {
 
         {/* Scroll indicator */}
         <AnimatePresence>
-          {phase === 3 && showContent && (
+          {phase === 4 && showContent && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -410,7 +452,7 @@ export default function Home() {
         </AnimatePresence>
 
         {/* MORE CONTENT TO SCROLL TO */}
-        {phase === 3 && showContent && (
+        {phase === 4 && showContent && (
           <div className="relative z-30 w-full bg-[#030303] pointer-events-auto border-t border-white/5">
             {/* Section 0: Bottle Reveal / Story Scene */}
             <section className="min-h-[100dvh] w-full px-6 py-24 md:py-32 border-b border-white/5 bg-[linear-gradient(180deg,#070707_0%,#020202_40%,#050505_100%)]">
