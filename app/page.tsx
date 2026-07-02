@@ -10,7 +10,7 @@ import { ShoppingCart } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function Home() {
-  const [phase, setPhase] = useState<1 | 3>(1);
+  const [phase, setPhase] = useState<1 | 2 | 3>(1);
   const [showContent, setShowContent] = useState(false);
 
   // Shopify integration states
@@ -23,9 +23,11 @@ export default function Home() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // References to videos
-  const introVideoRef = useRef<HTMLVideoElement>(null);
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
-  const [heroFinished, setHeroFinished] = useState(false);
+  const goldVideoRef = useRef<HTMLVideoElement>(null);
+  const splashVideoRef = useRef<HTMLVideoElement>(null);
+  const floatingVideoRef = useRef<HTMLVideoElement>(null);
+  const [floatingDuration, setFloatingDuration] = useState(0);
+  const [floatingProgress, setFloatingProgress] = useState(0);
   const { scrollY, scrollYProgress } = useScroll();
 
   const backgroundParallax = useTransform(scrollY, [0, 900], [0, -30]);
@@ -33,17 +35,32 @@ export default function Home() {
   const heroTitleOpacity = useTransform(scrollY, [0, 450], [1, 0.18]);
   const bottleFloat = useTransform(scrollY, [0, 900], [0, -18]);
   const sectionParallax = useTransform(scrollY, [0, 1200], [0, -24]);
+  const floatingStage = Math.min(2, Math.max(0, Math.floor(floatingProgress * 3)));
+  const floatingStageText = [
+    {
+      headline: "The bottle lifts into ritual motion.",
+      description: "As the animation climbs, Kumkumadi Taila reveals its quiet luxury — saffron, lotus, sandalwood, and a luminous skin sensation.",
+    },
+    {
+      headline: "Tilted elegance reveals premium detail.",
+      description: "At the next scroll moment, the bottle tilts and the story sharpens: refined texture, scent depth, and the ritual you can trust.",
+    },
+    {
+      headline: "A calm acquisition experience.",
+      description: "When the bottle completes its final motion, the premium order options appear with secure checkout and boutique-level care.",
+    },
+  ][floatingStage];
 
-  // Preload hero video for seamless transition
   useEffect(() => {
-    const heroVideo = heroVideoRef.current;
+    const goldVideo = goldVideoRef.current;
+    const splashVideo = splashVideoRef.current;
+    const floatingVideo = floatingVideoRef.current;
 
-    if (heroVideo) {
-      heroVideo.load();
-    }
+    if (goldVideo) goldVideo.load();
+    if (splashVideo) splashVideo.load();
+    if (floatingVideo) floatingVideo.load();
   }, []);
 
-  // Fetch product dynamically from Shopify Storefront API using private token header
   useEffect(() => {
     async function fetchProduct() {
       try {
@@ -76,8 +93,7 @@ export default function Home() {
     }
   }, [phase]);
 
-  // Handle high-end cinematic checkout redirect while keeping the user on-site
-  const handleAcquireNow = useCallback(() => {
+  const handleAcquireNow = useCallback((isAddToCart = false) => {
     setIsCheckingOut(true);
 
     window.setTimeout(() => {
@@ -90,47 +106,67 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Start intro video when mounted
-    const introVideo = introVideoRef.current;
-    if (introVideo && phase === 1) {
-      introVideo.currentTime = 3; // Cut the starting part by 3 seconds
-      introVideo.playbackRate = 1.08; // Set a steady, slightly faster speed for smoothness
-      introVideo.play().catch(e => console.log("Intro play error:", e));
+    const goldVideo = goldVideoRef.current;
+    if (goldVideo && phase === 1) {
+      goldVideo.currentTime = 0;
+      goldVideo.play().catch((e) => console.log("Logo play error:", e));
 
-      const handleEnded = () => setPhase(3);
-      introVideo.addEventListener("ended", handleEnded);
-
-      return () => {
-        introVideo.removeEventListener("ended", handleEnded);
+      const handleLogoEnd = () => {
+        setPhase(2);
+        setShowContent(true);
       };
+
+      goldVideo.addEventListener("ended", handleLogoEnd);
+      return () => goldVideo.removeEventListener("ended", handleLogoEnd);
     }
   }, [phase]);
 
-useEffect(() => {
-  const heroVideo = heroVideoRef.current;
+  useEffect(() => {
+    const splashVideo = splashVideoRef.current;
+    if (splashVideo && phase === 2) {
+      if (goldVideoRef.current) goldVideoRef.current.pause();
 
-  if (heroVideo && phase === 3) {
-    if (introVideoRef.current) introVideoRef.current.pause();
+      splashVideo.currentTime = 0;
+      splashVideo.play().catch((e) => console.log("Splash play error:", e));
 
-    heroVideo.currentTime = 0;
+      const handleSplashEnd = () => {
+        setPhase(3);
+      };
 
-    heroVideo.play().catch((e) =>
-      console.log("Hero play error:", e)
-    );
+      splashVideo.addEventListener("ended", handleSplashEnd);
+      return () => splashVideo.removeEventListener("ended", handleSplashEnd);
+    }
+  }, [phase]);
 
-    setShowContent(true);
+  useEffect(() => {
+    const floatingVideo = floatingVideoRef.current;
+    if (!floatingVideo) return;
 
-    const handleHeroEnd = () => {
-      setHeroFinished(true);
+    const onLoadedMetadata = () => {
+      setFloatingDuration(floatingVideo.duration || 0);
     };
 
-    heroVideo.addEventListener("ended", handleHeroEnd);
+    floatingVideo.addEventListener("loadedmetadata", onLoadedMetadata);
+    return () => floatingVideo.removeEventListener("loadedmetadata", onLoadedMetadata);
+  }, []);
 
-    return () => {
-      heroVideo.removeEventListener("ended", handleHeroEnd);
+  useEffect(() => {
+    const floatingVideo = floatingVideoRef.current;
+    if (!floatingVideo) return;
+
+    const handleScroll = () => {
+      if (phase !== 3 || floatingDuration <= 0) return;
+      const start = window.innerHeight * 0.4;
+      const end = window.innerHeight * 1.2;
+      const progress = Math.min(1, Math.max(0, (window.scrollY - start) / (end - start)));
+      floatingVideo.currentTime = progress * floatingDuration;
+      setFloatingProgress(progress);
     };
-  }
-}, [phase]);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [phase, floatingDuration]);
 
   return (
     <>
@@ -147,7 +183,7 @@ useEffect(() => {
           >
             {phase === 1 && (
               <video
-                ref={introVideoRef}
+                ref={goldVideoRef}
                 autoPlay
                 muted
                 playsInline
@@ -161,9 +197,9 @@ useEffect(() => {
               </video>
             )}
 
-            {phase === 3 && (
+            {phase === 2 && (
               <video
-                ref={heroVideoRef}
+                ref={splashVideoRef}
                 autoPlay
                 muted
                 playsInline
@@ -171,9 +207,24 @@ useEffect(() => {
                 poster="/images/hero-poster.jpg"
                 disablePictureInPicture
                 style={{ backfaceVisibility: "hidden" }}
-                className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1800ms] ease-in-out opacity-90 z-10"
+                className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1800ms] ease-in-out opacity-95 z-10"
               >
                 <source src="/videos/hero-bg.mp4" type="video/mp4" />
+              </video>
+            )}
+
+            {phase === 3 && (
+              <video
+                ref={floatingVideoRef}
+                muted
+                playsInline
+                preload="auto"
+                poster="/images/hero-poster.jpg"
+                disablePictureInPicture
+                style={{ backfaceVisibility: "hidden" }}
+                className="absolute inset-0 h-full w-full object-cover scale-[1.03] transform-gpu will-change-transform will-change-opacity transition-opacity duration-[1800ms] ease-in-out opacity-95 z-10"
+              >
+                <source src="/videos/floating annimation.mp4" type="video/mp4" />
               </video>
             )}
           </motion.div>
@@ -222,7 +273,7 @@ useEffect(() => {
                   y: 0,
                 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, delay: phase === 1 ? 0.3 : 0, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
                 className="mt-[calc(16rem+7cm)]"
               >
                 <p className="text-[10px] md:text-base tracking-[0.4em] md:tracking-[0.8em] text-yellow-500/90 uppercase font-light drop-shadow-[0_0_20px_rgba(255,215,0,0.4)]">
@@ -235,7 +286,42 @@ useEffect(() => {
 
         {/* HERO CONTENT */}
         <div className="relative z-30 min-h-[100dvh] w-full flex items-center pointer-events-none">
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
+            {phase === 2 && showContent && (
+              <motion.div
+                key="phase2-hero"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-center pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
+              >
+                <div className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-center justify-center text-center">
+                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-8 px-4 md:px-0">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                      className="max-w-3xl"
+                    >
+                      <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">A cinematic ritual begins</p>
+                      <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
+                      <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em] max-w-2xl mx-auto">Experience the logo reveal, then the splash of luxury around the bottle. Scroll down to lift the ritual into motion.</p>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1.2, delay: 0.25, ease: "easeOut" }}
+                      className="rounded-[32px] border border-white/10 bg-black/50 px-8 py-6 text-left backdrop-blur-xl shadow-[0_32px_80px_rgba(0,0,0,0.45)]"
+                    >
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-300/80 mb-3">Splash animation</p>
+                      <p className="text-sm text-white/70 leading-7">This screen appears while the bottle splash animation plays. The interface is calm, premium, and centered on the ritual.</p>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {phase === 3 && showContent && (
               <motion.div
                 key="hero-content"
@@ -288,6 +374,37 @@ useEffect(() => {
                     >
                       <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">Exquisite Ritual Oil</p>
                       <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
+                      <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em]">Scroll down to make the bottle rise, then tilt and reveal the order experience. Every stage is designed for luxury confidence.</p>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1.3, delay: 0.55, ease: "easeOut" }}
+                      className="mt-10 w-full max-w-3xl rounded-[32px] border border-white/10 bg-black/50 px-8 py-7 text-left backdrop-blur-xl shadow-[0_32px_80px_rgba(0,0,0,0.45)]"
+                    >
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-300/80 mb-3">Stage {floatingStage + 1} / 3</p>
+                      <h2 className="text-2xl md:text-3xl font-serif text-white mb-4">{floatingStageText.headline}</h2>
+                      <p className="text-sm text-white/70 leading-7">{floatingStageText.description}</p>
+
+                      {floatingStage === 2 && (
+                        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+                          <button
+                            type="button"
+                            onClick={() => handleAcquireNow(false)}
+                            className="w-full rounded-full border border-yellow-500/80 bg-yellow-500 px-6 py-4 text-[11px] uppercase tracking-[0.35em] text-black transition hover:bg-yellow-400 sm:w-auto"
+                          >
+                            Acquire Now
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAcquireNow(true)}
+                            className="w-full rounded-full border border-white/10 bg-white/10 px-6 py-4 text-[11px] uppercase tracking-[0.35em] text-white transition hover:bg-white/15 sm:w-auto"
+                          >
+                            Add to Cart
+                          </button>
+                        </div>
+                      )}
                     </motion.div>
                   </div>
                 </motion.div>
@@ -561,7 +678,7 @@ useEffect(() => {
                       <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80 mb-4">Begin your order</p>
                       <button
                         type="button"
-                        onClick={handleAcquireNow}
+                        onClick={() => handleAcquireNow(false)}
                         className="w-full rounded-full border border-yellow-600/50 bg-yellow-500/10 px-6 py-4 text-[10px] uppercase tracking-[0.35em] text-yellow-100 transition-all duration-500 hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white"
                       >
                         {isCheckingOut ? "PREPARING CHECKOUT" : "ACQUIRE THE ELIXIR"}
@@ -635,7 +752,7 @@ useEffect(() => {
                   <p className="text-white/65 leading-7 mb-10">Secure your Kumkumadi Taila in a calm, elevated flow designed for premium ritual buyers. This is checkout with quiet confidence and concierge care.</p>
                   <button
                     type="button"
-                    onClick={handleAcquireNow}
+                    onClick={() => handleAcquireNow(false)}
                     className="w-full rounded-full border border-yellow-600/50 bg-yellow-500/10 px-8 py-5 text-[10px] uppercase tracking-[0.35em] text-yellow-100 transition-all duration-500 hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white"
                   >
                     {isCheckingOut ? "PREPARING CHECKOUT" : "ACQUIRE THE ELIXIR"}
