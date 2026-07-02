@@ -1,14 +1,17 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function Home() {
   const [phase, setPhase] = useState<1 | 3>(1);
   const [showContent, setShowContent] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Shopify integration states
   const [productData, setProductData] = useState<{
@@ -22,6 +25,14 @@ export default function Home() {
   // References to videos
   const introVideoRef = useRef<HTMLVideoElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const [heroFinished, setHeroFinished] = useState(false);
+  const { scrollY, scrollYProgress } = useScroll();
+
+  const backgroundParallax = useTransform(scrollY, [0, 900], [0, -30]);
+  const heroLift = useTransform(scrollY, [0, 700], [0, -40]);
+  const heroTitleOpacity = useTransform(scrollY, [0, 450], [1, 0.18]);
+  const bottleFloat = useTransform(scrollY, [0, 900], [0, -18]);
+  const sectionParallax = useTransform(scrollY, [0, 1200], [0, -24]);
 
   // Preload hero video for seamless transition
   useEffect(() => {
@@ -95,32 +106,31 @@ export default function Home() {
     }
   }, [phase]);
 
-  useEffect(() => {
-    const heroVideo = heroVideoRef.current;
-    if (heroVideo && phase === 3) {
-      if (introVideoRef.current) introVideoRef.current.pause();
+useEffect(() => {
+  const heroVideo = heroVideoRef.current;
 
-      heroVideo.currentTime = 0;
-      heroVideo.play().catch(e => console.log("Hero play error:", e));
-      setShowContent(true);
-    }
-  }, [phase]);
+  if (heroVideo && phase === 3) {
+    if (introVideoRef.current) introVideoRef.current.pause();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY || 0;
-      const maxY = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = maxY > 0 ? Math.min(currentY / maxY, 1) : 0;
+    heroVideo.currentTime = 0;
 
-      setScrollY(currentY);
-      setScrollProgress(progress);
+    heroVideo.play().catch((e) =>
+      console.log("Hero play error:", e)
+    );
+
+    setShowContent(true);
+
+    const handleHeroEnd = () => {
+      setHeroFinished(true);
     };
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    heroVideo.addEventListener("ended", handleHeroEnd);
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    return () => {
+      heroVideo.removeEventListener("ended", handleHeroEnd);
+    };
+  }
+}, [phase]);
 
   return (
     <>
@@ -132,7 +142,7 @@ export default function Home() {
         <div className="fixed inset-0 z-0 h-full w-full overflow-hidden bg-black">
           <motion.div
             className="absolute inset-0 h-full w-full"
-            animate={{ y: scrollY * 0.04 }}
+            style={{ y: backgroundParallax }}
             transition={{ type: "spring", stiffness: 60, damping: 20 }}
           >
             {phase === 1 && (
@@ -156,7 +166,6 @@ export default function Home() {
                 ref={heroVideoRef}
                 autoPlay
                 muted
-                loop
                 playsInline
                 preload="auto"
                 poster="/images/hero-poster.jpg"
@@ -176,7 +185,7 @@ export default function Home() {
         <div className="fixed top-0 left-0 z-[60] h-[2px] w-full bg-white/5" aria-hidden="true">
           <motion.div
             className="h-full bg-gradient-to-r from-yellow-500/90 via-amber-300/80 to-yellow-100"
-            animate={{ width: `${scrollProgress * 100}%` }}
+            style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
             transition={{ type: "spring", stiffness: 70, damping: 24 }}
           />
         </div>
@@ -236,150 +245,51 @@ export default function Home() {
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-between pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
                 <motion.div
-                  className="w-full h-full md:h-auto max-w-6xl mx-auto flex flex-col justify-between md:justify-start items-center text-center md:items-start md:text-left"
-                  style={{ y: scrollY * 0.03 }}
+                  className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-center justify-center text-center"
+                  style={{ y: heroLift, opacity: heroTitleOpacity }}
                 >
-                  {/* TOP GROUP (Title) */}
                   <motion.div
-                    className="w-full rounded-[32px] border border-white/10 bg-black/25 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-2xl md:max-w-3xl md:p-8"
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.6 }}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 -top-20 z-0 h-[420px] hidden md:block"
+                    style={{ y: backgroundParallax }}
                   >
-                    <motion.p
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ duration: 1.2, delay: 0.1 }}
-                      className="text-[10px] md:text-xs tracking-[0.45em] text-yellow-500/90 mb-4 md:mb-6 uppercase font-light"
-                    >
-                      The Legendary Ayurvedic Elixir
-                    </motion.p>
-
-                    <motion.h1
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ duration: 1.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                      className="text-[56px] md:text-[84px] lg:text-[110px] font-semibold tracking-[0.18em] text-white leading-[1.02] drop-shadow-[0_0_40px_rgba(255,255,255,0.18)] font-serif uppercase"
-                    >
-                      Kumkumadi
-                      <span className="block md:inline italic text-yellow-100/95 md:ml-5">Taila</span>
-                    </motion.h1>
+                    <div className="absolute left-0 top-0 h-64 w-64 rounded-full bg-yellow-400/12 blur-3xl" />
+                    <div className="absolute right-0 top-10 h-72 w-72 rounded-full bg-amber-200/8 blur-3xl" />
+                    <div className="absolute left-1/2 top-12 h-[180px] w-[60%] -translate-x-1/2 rounded-full border border-white/8 bg-[linear-gradient(120deg,rgba(255,255,255,0.04),transparent_50%,rgba(255,255,255,0.03))] shadow-[0_0_80px_rgba(255,215,0,0.08)]" />
                   </motion.div>
 
-                  {/* BOTTOM GROUP (Description, Proof, Product Preview) */}
-                  <motion.div
-                    className="mt-auto flex w-full flex-col items-center rounded-[30px] border border-white/10 bg-black/25 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-2xl md:mt-10 md:items-start md:p-6"
-                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                  >
+                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-4 md:px-0">
                     <motion.div
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: 1 }}
-                      transition={{ duration: 1.2, delay: 0.3 }}
-                      className="w-24 md:w-32 h-[1px] bg-gradient-to-r from-yellow-600/80 to-transparent mb-6 md:mb-10 origin-center md:origin-left mx-auto md:mx-0"
-                    />
-
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 1.2, delay: 0.4 }}
-                      className="text-white text-sm md:text-lg tracking-[0.05em] font-medium leading-relaxed max-w-md mb-6 md:mb-8 drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]"
+                      initial={{ opacity: 0, y: 22, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative flex items-center justify-center"
                     >
-                      Handcrafted with rare saffron and pristine lotus extracts.
-                      A luminous ritual designed to bring back softness, glow, and calm confidence.
-                    </motion.p>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1, delay: 0.45 }}
-                      className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-[10px] md:text-[11px] uppercase tracking-[0.25em] text-white/80 mb-8 md:mb-10"
-                    >
-                      <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">★ 4.9 / 5</span>
-                      <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">Trusted by 5,000+ rituals</span>
-                      <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">100% Ayurvedic formulation</span>
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1, delay: 0.52 }}
-                      className="mb-8 flex flex-wrap items-center justify-center gap-3 border border-white/8 bg-black/30 px-4 py-3 text-[10px] uppercase tracking-[0.35em] text-white/55 md:justify-start backdrop-blur-xl"
-                    >
-                      <span>Featured in</span>
-                      <span className="text-white/75">VOGUE</span>
-                      <span className="text-white/60">•</span>
-                      <span className="text-white/75">ELLE</span>
-                      <span className="text-white/60">•</span>
-                      <span className="text-white/75">COSMOPOLITAN</span>
-                    </motion.div>
-
-                    <div className="w-full grid gap-8 md:grid-cols-[1fr_420px] md:items-center">
+                      <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,214,88,0.16),transparent_45%)] blur-3xl" />
                       <motion.div
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 1.4, delay: 0.5, ease: "easeOut" }}
-                        className="w-full flex flex-col items-center md:items-start"
+                        animate={{ y: [0, -10, 0], rotate: [0, 1.2, -1.2, 0] }}
+                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                        className="relative z-10 w-[220px] h-[420px] md:w-[320px] md:h-[560px] flex items-center justify-center"
                       >
-                        <button
-                          type="button"
-                          onClick={() => {
-                            document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" });
-                          }}
-                          className="group relative overflow-hidden px-10 md:px-14 py-4 md:py-5 border border-yellow-600/50 bg-transparent text-[10px] md:text-[11px] tracking-[0.3em] text-yellow-500 transition-all duration-700 hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white hover:shadow-[0_0_30px_rgba(234,179,8,0.18)] w-fit cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                        >
-                          <span className="relative z-10 pointer-events-none">SHOP KUMKUMADI TAILA</span>
-                          <div className="absolute inset-0 h-full w-full translate-y-full bg-yellow-900/40 transition-transform duration-700 ease-out group-hover:translate-y-0 pointer-events-none"></div>
-                        </button>
-
-                        <p className="mt-5 max-w-sm text-sm md:text-[13px] leading-6 text-white/65 tracking-[0.08em] uppercase text-center md:text-left">
-                          Visible results, premium ritual, and concierge guidance from first click to checkout.
-                        </p>
+                        <div className="absolute inset-0 rounded-full border border-white/10 shadow-[0_0_120px_rgba(255,215,0,0.12)]" />
+                        <img
+                          src="/images/botle.png"
+                          alt="Kumkumadi Taila bottle"
+                          className="relative z-10 h-full w-auto object-contain drop-shadow-[0_28px_80px_rgba(255,215,0,0.22)]"
+                        />
                       </motion.div>
+                    </motion.div>
 
-                      <motion.article
-                        initial={{ opacity: 0, y: 18 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1.1, delay: 0.6, ease: "easeOut" }}
-                        whileHover={{ y: -4, scale: 1.01 }}
-                        style={{ y: Math.min(scrollY * 0.03, 24) }}
-                        className="mx-auto w-full max-w-sm rounded-[30px] border border-white/10 bg-black/55 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl ring-1 ring-white/10 md:ml-auto md:mr-0"
-                      >
-                        <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Featured Elixir</p>
-                        <div className="mt-4 rounded-[24px] border border-white/8 bg-[linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4">
-                          <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] border border-white/8 bg-[linear-gradient(145deg,#131313,#060606)]">
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_35%)]" />
-                            <img
-                              src="/images/product.png"
-                              alt="Kumkumadi Taila bottle"
-                              className="relative z-10 h-full w-full object-contain p-4 drop-shadow-[0_18px_35px_rgba(255,215,0,0.18)]"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex items-start justify-between gap-4">
-                          <div>
-                            <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/70">Kumkumadi Taila</p>
-                            <h3 className="mt-2 text-xl md:text-2xl font-serif text-white">Royal Saffron Ritual</h3>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-lg md:text-xl text-yellow-100">₹{productData?.price || "4,999"}</p>
-                            <p className="text-[9px] uppercase tracking-[0.25em] text-white/45">{productData?.available === false ? "Currently unavailable" : "In stock"}</p>
-                          </div>
-                        </div>
-
-                        <p className="mt-4 text-sm text-white/72 leading-6">
-                          A rare blend of saffron, lotus, sandalwood, and Ayurvedic botanicals for luminous, velvety skin.
-                        </p>
-
-                        <button
-                          type="button"
-                          onClick={handleAcquireNow}
-                          className="mt-5 w-full border border-yellow-600/40 bg-yellow-500/8 px-4 py-3 text-[10px] uppercase tracking-[0.35em] text-yellow-100 transition-all duration-500 hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white hover:shadow-[0_0_24px_rgba(234,179,8,0.18)] cursor-pointer"
-                        >
-                          {isCheckingOut ? "PREPARING CHECKOUT" : "ADD TO CART"}
-                        </button>
-                      </motion.article>
-                    </div>
-                  </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1.4, delay: 0.4, ease: "easeOut" }}
+                      className="max-w-3xl"
+                    >
+                      <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">Exquisite Ritual Oil</p>
+                      <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
+                    </motion.div>
+                  </div>
                 </motion.div>
               </motion.div>
             )}
@@ -395,7 +305,7 @@ export default function Home() {
               transition={{ delay: 3, duration: 2 }}
               className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-40"
             >
-              <span className="text-[9px] tracking-[0.4em] text-white/50 uppercase">Discover</span>
+              <span className="text-[9px] tracking-[0.4em] text-white/50 uppercase">Scroll Down</span>
               <motion.div
                 animate={{ y: [0, 12, 0], opacity: [0.5, 1, 0.5] }}
                 transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
@@ -416,16 +326,17 @@ export default function Home() {
                 transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
                 viewport={{ once: true, amount: 0.25 }}
                 className="mx-auto flex min-h-[80dvh] max-w-7xl flex-col justify-center gap-10"
-                style={{ y: scrollY * 0.08 }}
+                style={{ y: sectionParallax }}
               >
-                <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-                  <div className="rounded-[32px] border border-white/8 bg-white/4 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-10">
-                    <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Scroll Scene</p>
-                    <h2 className="mt-6 max-w-md text-4xl md:text-6xl font-light text-white font-serif leading-tight">Kumkumadi Taila</h2>
-                    <p className="mt-6 max-w-md text-sm md:text-base leading-7 text-white/70 tracking-[0.04em]">A luminous elixir designed to emerge slowly from the dark, like a private ritual revealed only to those who pause long enough to notice its glow.</p>
-                    <div className="mt-8 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.35em] text-white/65">
-                      <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">21 Ayurvedic ingredients</span>
-                      <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">Royal skincare heritage</span>
+                <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
+                  <div className="space-y-8">
+                    <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Stage One</p>
+                    <h2 className="max-w-xl text-4xl md:text-6xl font-light text-white font-serif leading-tight">A bottle in the center, the ritual unfolding around it.</h2>
+                    <p className="max-w-lg text-sm md:text-base leading-7 text-white/70 tracking-[0.04em]">Slowly rising through cinematic light, the Kumkumadi Taila bottle is the quiet star of a ritual presentation designed to feel calm, premium, and unforgettable.</p>
+                    <div className="flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.35em] text-white/65">
+                      <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">Golden textures</span>
+                      <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">Premium pacing</span>
+                      <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">Quiet luxury</span>
                     </div>
                   </div>
 
@@ -442,11 +353,11 @@ export default function Home() {
                       className="absolute inset-0"
                     />
                     <img
-                      src="/images/product.png"
+                      src="/images/botle.png"
                       alt="Luxury Kumkumadi Taila bottle"
                       className="relative z-10 h-full w-full object-contain drop-shadow-[0_22px_40px_rgba(255,215,0,0.22)]"
                     />
-                    <div className="absolute inset-x-8 bottom-6 rounded-full bg-yellow-500/8 px-4 py-2 text-center text-[10px] uppercase tracking-[0.35em] text-yellow-100/90 backdrop-blur-xl">Radiance. Reimagined.</div>
+                    <div className="absolute inset-x-8 bottom-6 rounded-full bg-yellow-500/8 px-4 py-2 text-center text-[10px] uppercase tracking-[0.35em] text-yellow-100/90 backdrop-blur-xl">Radiance Reimagined</div>
                   </motion.div>
                 </div>
               </motion.div>
@@ -460,7 +371,7 @@ export default function Home() {
                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 viewport={{ once: true, margin: "-100px" }}
                 className="max-w-7xl mx-auto"
-                style={{ y: scrollY * 0.02 }}
+                style={{ y: sectionParallax }}
               >
                 <motion.div
                   initial={{ opacity: 0, y: 18 }}
@@ -468,23 +379,23 @@ export default function Home() {
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ duration: 0.8 }}
                   className="text-center mb-20 md:mb-32"
-                  style={{ y: scrollY * 0.02 }}
+                  style={{ y: sectionParallax }}
                 >
-                  <p className="text-yellow-500/80 tracking-[0.4em] text-xs uppercase mb-6 font-light">The Boutique</p>
+                  <p className="text-yellow-500/80 tracking-[0.4em] text-xs uppercase mb-6 font-light">The Ritual</p>
                   <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-10 font-serif">
-                    One bottle. One ritual. A whole world of glow.
+                    A calm procession of texture, scent, and slow gold light.
                   </h2>
                   <div className="w-12 h-[1px] bg-yellow-600/50 mx-auto" />
                   <p className="mt-8 max-w-3xl mx-auto text-white/65 text-sm md:text-base leading-relaxed tracking-[0.08em] uppercase">
-                    A refined ritual experience with luminous texture, slow craftsmanship, and the quiet confidence of a true luxury brand.
+                    This is a premium product presentation that puts the bottle center stage and lets the story rise naturally with each scroll.
                   </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-20">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                   {[
-                    ["Saffron-Infused", "Rare Kashmiri saffron blended with botanical oils for luminous, balanced glow."],
-                    ["Fast Concierge", "Personalized guidance for rituals, gifting, and order assistance in under one day."],
-                    ["Authentic Luxury", "Small-batch craftsmanship with premium packaging and a polished checkout flow."],
+                    ["Saffron Heritage", "Rare Kashmiri saffron and botanical oils for luminous, velvety skin."],
+                    ["Crafted Slowly", "Small-batch formulation with quiet luxury and thoughtful texture."],
+                    ["Secure Checkout", "A polished buy flow with concierge support and premium confidence."],
                   ].map(([title, text], index) => (
                     <motion.article
                       key={title}
@@ -492,82 +403,12 @@ export default function Home() {
                       initial={{ opacity: 0, y: 18 }}
                       viewport={{ once: true, amount: 0.35 }}
                       transition={{ duration: 0.7, delay: index * 0.08 }}
-                      className="rounded-2xl border border-white/8 bg-white/4 p-6 text-left shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+                      className="rounded-[30px] border border-white/8 bg-white/4 p-8 text-left shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl"
                     >
                       <p className="text-[10px] tracking-[0.35em] text-yellow-500/90 uppercase mb-4">{title}</p>
-                      <p className="text-sm text-white/70 leading-6">{text}</p>
+                      <p className="text-sm text-white/70 leading-7">{text}</p>
                     </motion.article>
                   ))}
-                </div>
-
-                {/* Grid of Products */}
-                <div className="grid grid-cols-1 gap-10 md:gap-16 lg:grid-cols-[1.1fr_0.9fr]">
-                  {/* Main product reveal */}
-                  <motion.div
-                    whileHover={{ y: -8, rotateX: 1, rotateY: -1 }}
-                    transition={{ type: "spring", stiffness: 180, damping: 18 }}
-                    style={{ y: Math.min(scrollY * 0.02, 18) }}
-                    className="rounded-[32px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-8"
-                  >
-                    <div className="grid items-center gap-8 md:grid-cols-[0.9fr_1.1fr]">
-                      <div className="rounded-[28px] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_25%),linear-gradient(145deg,#121212,#060606)] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
-                        <div className="aspect-[3/4] overflow-hidden rounded-[24px] border border-white/8 bg-[linear-gradient(145deg,#171717,#070707)] p-4">
-                          <img
-                            src="/images/product.png"
-                            alt="Kumkumadi Taila"
-                            className="h-full w-full object-contain transition-transform duration-700 hover:scale-105"
-                          />
-                        </div>
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">Luxury Product Showcase</p>
-                        <h3 className="mt-4 text-3xl md:text-4xl font-light text-white font-serif">Kumkumadi Taila</h3>
-                        <p className="mt-4 max-w-sm text-sm md:text-[15px] leading-7 text-white/70 tracking-[0.04em]">A velvety golden elixir created for luminous skin, soft ritual, and the confidence of a truly heirloom beauty experience.</p>
-                        <div className="mt-6 flex items-end gap-4">
-                          <div>
-                            <p className="text-[10px] uppercase tracking-[0.35em] text-white/45">Starting at</p>
-                            <p className="mt-2 text-3xl text-yellow-100">₹{productData?.price || "4,999"}</p>
-                          </div>
-                          <p className="text-[10px] uppercase tracking-[0.35em] text-white/45">{productData?.available === false ? "Currently unavailable" : "In stock • secure checkout"}</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleAcquireNow}
-                          className="mt-8 w-full border border-yellow-600/40 bg-yellow-500/8 px-5 py-4 text-[10px] uppercase tracking-[0.35em] text-yellow-100 transition-all duration-500 hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white hover:shadow-[0_0_30px_rgba(234,179,8,0.18)] cursor-pointer md:w-fit"
-                        >
-                          {isCheckingOut ? "PREPARING CHECKOUT" : "ACQUIRE THE ELIXIR"}
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Supporting luxury notes */}
-                  <motion.article
-                    whileHover={{ y: -6, scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 160, damping: 16 }}
-                    className="flex flex-col items-center text-center group rounded-3xl border border-white/8 bg-white/4 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-transform duration-700 hover:border-yellow-600/30"
-                  >
-                    <div className="w-full aspect-[3/4] bg-[linear-gradient(145deg,#111111,#070707)] border border-white/5 relative overflow-hidden mb-8 flex items-center justify-center">
-                      <span className="text-white/20 tracking-[0.3em] text-xs font-light uppercase">Luminous Glow</span>
-                    </div>
-                    <h3 className="text-xl md:text-2xl font-light text-white mb-4 font-serif">Luminous Radiance</h3>
-                    <p className="text-white/50 text-[10px] tracking-[0.2em] uppercase mb-5">Softens • Brightens • Revives</p>
-                    <p className="text-sm text-white/65 leading-6">A velvet finish with a visibly brighter, calmer complexion through daily ritual use.</p>
-                  </motion.article>
-
-                  {/* Product 3: Ritual Benefits */}
-                  <motion.article
-                    whileHover={{ y: -6, scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 160, damping: 16 }}
-                    className="flex flex-col items-center text-center group rounded-3xl border border-white/8 bg-white/4 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-transform duration-700 hover:border-yellow-600/30"
-                  >
-                    <div className="w-full aspect-[3/4] bg-[linear-gradient(145deg,#151515,#080808)] border border-white/5 relative overflow-hidden mb-8 flex items-center justify-center">
-                      <span className="text-white/20 tracking-[0.3em] text-xs font-light uppercase">Night Ritual</span>
-                    </div>
-                    <h3 className="text-xl md:text-2xl font-light text-white mb-4 font-serif">Velvet Hydration</h3>
-                    <p className="text-white/50 text-[10px] tracking-[0.2em] uppercase mb-5">Deeply Nourishing • Cooling • Restorative</p>
-                    <p className="text-sm text-white/65 leading-6">A slow, indulgent overnight ritual that leaves skin supple, smooth, and comforted.</p>
-                  </motion.article>
                 </div>
               </motion.div>
             </div>
@@ -580,7 +421,7 @@ export default function Home() {
                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 viewport={{ once: true, margin: "-100px" }}
                 className="text-center max-w-4xl mx-auto"
-                style={{ y: scrollY * 0.03 }}
+                style={{ y: sectionParallax }}
               >
                 <p className="text-yellow-500/80 tracking-[0.4em] text-xs uppercase mb-6 font-light">Crafted for the modern ritual</p>
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white mb-10 font-serif">
@@ -711,19 +552,22 @@ export default function Home() {
                   viewport={{ once: true, margin: "-100px" }}
                   className="rounded-[30px] border border-white/8 bg-white/4 p-8 md:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl"
                 >
-                  <p className="text-yellow-500/80 tracking-[0.35em] text-xs uppercase mb-5 font-light">Faq</p>
-                  <h2 className="text-3xl md:text-5xl font-light text-white font-serif">Quick answers for first-time buyers</h2>
-                  <div className="mt-8 space-y-4 text-sm text-white/75">
-                    {[
-                      ['How do I use it?', 'Apply a few drops to clean skin in the evening and massage gently until absorbed.'],
-                      ['Is it suitable for all skin types?', 'It is designed for normal, dry, and combination skin and is best used as a nightly ritual.'],
-                      ['How soon can I expect results?', 'Many users notice immediate softness, with a luminous finish that builds with consistent use.'],
-                    ].map(([q, a]) => (
-                      <article key={q} className="rounded-3xl border border-white/8 bg-black/40 p-5">
-                        <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80">{q}</p>
-                        <p className="mt-3 text-sm text-white/75 leading-6">{a}</p>
-                      </article>
-                    ))}
+                  <p className="text-yellow-500/80 tracking-[0.35em] text-xs uppercase mb-5 font-light">Craftsmanship</p>
+                  <h2 className="text-3xl md:text-5xl font-light text-white font-serif">A quiet luxury experience from origin to order.</h2>
+                  <div className="mt-8 space-y-6 text-sm text-white/75">
+                    <p>Formulated with 21 botanicals, refined over time, and presented with the calm of a premium ritual.</p>
+                    <p>Every detail is designed to feel elevated without unnecessary noise — from texture to checkout.</p>
+                    <div className="rounded-3xl border border-white/10 bg-black/40 p-6">
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-500/80 mb-4">Begin your order</p>
+                      <button
+                        type="button"
+                        onClick={handleAcquireNow}
+                        className="w-full rounded-full border border-yellow-600/50 bg-yellow-500/10 px-6 py-4 text-[10px] uppercase tracking-[0.35em] text-yellow-100 transition-all duration-500 hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white"
+                      >
+                        {isCheckingOut ? "PREPARING CHECKOUT" : "ACQUIRE THE ELIXIR"}
+                      </button>
+                      <p className="mt-4 text-[10px] uppercase tracking-[0.35em] text-white/50">Secure luxury checkout with concierge guidance available.</p>
+                    </div>
                   </div>
                 </motion.div>
               </div>
@@ -779,41 +623,24 @@ export default function Home() {
                   </div>
                 </motion.div>
 
-                {/* Inquiry Form (Minimalist) */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                   viewport={{ once: true }}
-                  className="flex flex-col justify-center"
+                  className="rounded-[30px] border border-white/8 bg-white/4 p-8 md:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl"
                 >
-                  <form className="flex flex-col gap-10" onSubmit={e => e.preventDefault()}>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="YOUR NAME"
-                        className="w-full bg-transparent border-b border-white/20 pb-4 text-[10px] md:text-xs tracking-[0.3em] text-white focus:outline-none focus:border-yellow-500 transition-colors placeholder:text-white/30 font-light"
-                      />
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        placeholder="EMAIL ADDRESS"
-                        className="w-full bg-transparent border-b border-white/20 pb-4 text-[10px] md:text-xs tracking-[0.3em] text-white focus:outline-none focus:border-yellow-500 transition-colors placeholder:text-white/30 font-light"
-                      />
-                    </div>
-                    <div className="relative">
-                      <textarea
-                        placeholder="YOUR MESSAGE"
-                        rows={3}
-                        className="w-full bg-transparent border-b border-white/20 pb-4 text-[10px] md:text-xs tracking-[0.3em] text-white focus:outline-none focus:border-yellow-500 transition-colors placeholder:text-white/30 resize-none font-light"
-                      />
-                    </div>
-                    <button className="group relative overflow-hidden px-12 py-5 border border-yellow-600/50 bg-transparent text-[10px] tracking-[0.3em] text-yellow-500 transition-all duration-700 hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white hover:shadow-[0_0_30px_rgba(234,179,8,0.18)] w-max mt-4 mx-auto md:mx-0 cursor-pointer font-light">
-                      <span className="relative z-10">SEND INQUIRY</span>
-                      <div className="absolute inset-0 h-full w-full translate-y-full bg-yellow-900/40 transition-transform duration-700 ease-out group-hover:translate-y-0" />
-                    </button>
-                  </form>
+                  <p className="text-yellow-500/80 tracking-[0.35em] text-xs uppercase mb-5 font-light">Luxury Checkout</p>
+                  <h3 className="text-3xl md:text-5xl font-light text-white font-serif mb-8">Begin your private order</h3>
+                  <p className="text-white/65 leading-7 mb-10">Secure your Kumkumadi Taila in a calm, elevated flow designed for premium ritual buyers. This is checkout with quiet confidence and concierge care.</p>
+                  <button
+                    type="button"
+                    onClick={handleAcquireNow}
+                    className="w-full rounded-full border border-yellow-600/50 bg-yellow-500/10 px-8 py-5 text-[10px] uppercase tracking-[0.35em] text-yellow-100 transition-all duration-500 hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white"
+                  >
+                    {isCheckingOut ? "PREPARING CHECKOUT" : "ACQUIRE THE ELIXIR"}
+                  </button>
+                  <p className="mt-6 text-[10px] uppercase tracking-[0.35em] text-white/50">A premium checkout curated for an intimate launch experience.</p>
                 </motion.div>
               </div>
 
