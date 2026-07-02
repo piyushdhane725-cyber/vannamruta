@@ -6,6 +6,7 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
+import Lenis from "lenis";
 import { ShoppingCart } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
@@ -25,7 +26,9 @@ export default function Home() {
   // References to videos
   const goldVideoRef = useRef<HTMLVideoElement>(null);
   const splashVideoRef = useRef<HTMLVideoElement>(null);
+  const heroBgVideoRef = useRef<HTMLVideoElement>(null);
   const floatingVideoRef = useRef<HTMLVideoElement>(null);
+  const [heroBgDuration, setHeroBgDuration] = useState(0);
   const [floatingDuration, setFloatingDuration] = useState(0);
   const [floatingStage, setFloatingStage] = useState(0);
   const { scrollY, scrollYProgress } = useScroll();
@@ -36,6 +39,28 @@ export default function Home() {
   const bottleFloat = useTransform(scrollY, [0, 900], [0, -18]);
   const sectionParallax = useTransform(scrollY, [0, 1200], [0, -24]);
   const floatingStageTimes = [0.04, 0.06, 0.1];
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.3,
+      easing: (t: number) => 1 - Math.pow(1 - t, 3),
+      smoothWheel: true,
+      touchMultiplier: 1.5,
+    });
+
+    let frame = 0;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      frame = requestAnimationFrame(raf);
+    };
+
+    frame = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      lenis.destroy();
+    };
+  }, []);
   const floatingStageText = [
     {
       headline: "The bottle lifts into ritual motion.",
@@ -53,11 +78,11 @@ export default function Home() {
 
   useEffect(() => {
     const goldVideo = goldVideoRef.current;
-    const splashVideo = splashVideoRef.current;
+    const heroBgVideo = heroBgVideoRef.current;
     const floatingVideo = floatingVideoRef.current;
 
     if (goldVideo) goldVideo.load();
-    if (splashVideo) splashVideo.load();
+    if (heroBgVideo) heroBgVideo.load();
     if (floatingVideo) floatingVideo.load();
   }, []);
 
@@ -303,7 +328,7 @@ export default function Home() {
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-center pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
                 <div className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-center justify-center text-center">
-                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-8 px-4 md:px-0">
+                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-6 px-4 md:px-0">
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -312,16 +337,15 @@ export default function Home() {
                     >
                       <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">A cinematic ritual begins</p>
                       <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
-                      <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em] max-w-2xl mx-auto">Experience the logo reveal, then the splash of luxury around the bottle. Scroll down to lift the ritual into motion.</p>
+                      <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em] max-w-2xl mx-auto">The bottle emerges from shadow, wrapped in saffron light and oil-rich motion. No clutter, no noise—only the feeling of a luxury reveal.</p>
                     </motion.div>
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1.2, delay: 0.25, ease: "easeOut" }}
-                      className="rounded-[32px] border border-white/10 bg-black/50 px-8 py-6 text-left backdrop-blur-xl shadow-[0_32px_80px_rgba(0,0,0,0.45)]"
+                      transition={{ duration: 1.1, delay: 0.2, ease: "easeOut" }}
+                      className="rounded-full border border-white/10 bg-black/35 px-5 py-3 text-[10px] uppercase tracking-[0.35em] text-white/70 backdrop-blur-xl"
                     >
-                      <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-300/80 mb-3">Splash animation</p>
-                      <p className="text-sm text-white/70 leading-7">This screen appears while the bottle splash animation plays. The interface is calm, premium, and centered on the ritual.</p>
+                      Luxury splash • Golden particles • Soft volumetric glow
                     </motion.div>
                   </div>
                 </div>
@@ -350,7 +374,7 @@ export default function Home() {
                     <div className="absolute left-1/2 top-12 h-[180px] w-[60%] -translate-x-1/2 rounded-full border border-white/8 bg-[linear-gradient(120deg,rgba(255,255,255,0.04),transparent_50%,rgba(255,255,255,0.03))] shadow-[0_0_80px_rgba(255,215,0,0.08)]" />
                   </motion.div>
 
-                  <div className="relative z-10 grid w-full gap-8 xl:grid-cols-[0.65fr_0.35fr] xl:items-center xl:text-left">
+                  <div className="relative z-10 grid w-full gap-8 xl:grid-cols-[0.62fr_0.38fr] xl:items-center xl:text-left">
                     <div className="relative flex flex-col items-center justify-center px-4 md:px-0 text-center xl:text-left">
                       <motion.div
                         initial={{ opacity: 0, y: 12 }}
@@ -358,9 +382,9 @@ export default function Home() {
                         transition={{ duration: 1.4, ease: "easeOut" }}
                         className="mb-8 max-w-2xl"
                       >
-                        <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">A scroll-led bottle ritual</p>
+                        <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">Scroll-led luxury reveal</p>
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
-                        <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em]">The floating flip animation is controlled by scrolling. Each scroll step reveals the product, the benefits, then the premium order call to action.</p>
+                        <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em]">The bottle rotates, lifts and reveals itself through the scroll. Each stage creates breathing room for the ritual, the ingredients, and the purchase decision.</p>
                       </motion.div>
                     </div>
 
@@ -373,6 +397,11 @@ export default function Home() {
                       <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-300/80 mb-3">Scroll stage {floatingStage + 1}</p>
                       <h2 className="text-2xl md:text-3xl font-serif text-white mb-5">{floatingStageText.headline}</h2>
                       <p className="text-sm text-white/70 leading-7">{floatingStageText.description}</p>
+
+                      <div className="mt-6 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.3em] text-white/60">
+                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">{productData?.available ? "In stock" : "Private collection"}</span>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">{productData ? `${productData.currency}${productData.price}` : "Premium pricing"}</span>
+                      </div>
 
                       {floatingStage === 2 && (
                         <div className="mt-8 grid gap-3 sm:flex sm:justify-start">
