@@ -27,7 +27,7 @@ export default function Home() {
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const floatingVideoRef = useRef<HTMLVideoElement>(null);
   const [floatingDuration, setFloatingDuration] = useState(0);
-  const [floatingProgress, setFloatingProgress] = useState(0);
+  const [floatingStage, setFloatingStage] = useState(0);
   const { scrollY, scrollYProgress } = useScroll();
 
   const backgroundParallax = useTransform(scrollY, [0, 900], [0, -30]);
@@ -35,19 +35,19 @@ export default function Home() {
   const heroTitleOpacity = useTransform(scrollY, [0, 450], [1, 0.18]);
   const bottleFloat = useTransform(scrollY, [0, 900], [0, -18]);
   const sectionParallax = useTransform(scrollY, [0, 1200], [0, -24]);
-  const floatingStage = Math.min(2, Math.max(0, Math.floor(floatingProgress * 3)));
+  const floatingStageTimes = [0.04, 0.06, 0.1];
   const floatingStageText = [
     {
       headline: "The bottle lifts into ritual motion.",
-      description: "As the animation climbs, Kumkumadi Taila reveals its quiet luxury — saffron, lotus, sandalwood, and a luminous skin sensation.",
+      description: "On the first scroll, the bottle lifts into a slanted position and the right-side text appears in a calm luxury panel.",
     },
     {
-      headline: "Tilted elegance reveals premium detail.",
-      description: "At the next scroll moment, the bottle tilts and the story sharpens: refined texture, scent depth, and the ritual you can trust.",
+      headline: "The bottle pauses in a refined tilt.",
+      description: "The second scroll holds the animation at 0.06s and displays benefit and research copy beside the product.",
     },
     {
-      headline: "A calm acquisition experience.",
-      description: "When the bottle completes its final motion, the premium order options appear with secure checkout and boutique-level care.",
+      headline: "A calm acquisition stage.",
+      description: "The final scroll lands the flip frame at 0.10s and reveals a premium order panel without covering the bottle.",
     },
   ][floatingStage];
 
@@ -156,11 +156,17 @@ export default function Home() {
 
     const handleScroll = () => {
       if (phase !== 3 || floatingDuration <= 0) return;
-      const start = window.innerHeight * 0.4;
-      const end = window.innerHeight * 1.2;
-      const progress = Math.min(1, Math.max(0, (window.scrollY - start) / (end - start)));
-      floatingVideo.currentTime = progress * floatingDuration;
-      setFloatingProgress(progress);
+
+      const start = window.innerHeight * 0.5;
+      const stepHeight = window.innerHeight * 0.8;
+      const progress = Math.min(1, Math.max(0, (window.scrollY - start) / (stepHeight * 3)));
+      const stage = Math.min(2, Math.max(0, Math.floor(progress * 3)));
+      const targetTime = floatingStageTimes[stage] ?? floatingStageTimes[0];
+
+      if (Math.abs(floatingVideo.currentTime - targetTime) > 0.001) {
+        floatingVideo.currentTime = targetTime;
+      }
+      setFloatingStage(stage);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -331,7 +337,7 @@ export default function Home() {
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-between pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
                 <motion.div
-                  className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-center justify-center text-center"
+                  className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] items-center justify-center text-center"
                   style={{ y: heroLift, opacity: heroTitleOpacity }}
                 >
                   <motion.div
@@ -344,51 +350,32 @@ export default function Home() {
                     <div className="absolute left-1/2 top-12 h-[180px] w-[60%] -translate-x-1/2 rounded-full border border-white/8 bg-[linear-gradient(120deg,rgba(255,255,255,0.04),transparent_50%,rgba(255,255,255,0.03))] shadow-[0_0_80px_rgba(255,215,0,0.08)]" />
                   </motion.div>
 
-                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-4 md:px-0">
-                    <motion.div
-                      initial={{ opacity: 0, y: 22, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
-                      className="relative flex items-center justify-center"
-                    >
-                      <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,214,88,0.16),transparent_45%)] blur-3xl" />
+                  <div className="relative z-10 grid w-full gap-8 xl:grid-cols-[0.65fr_0.35fr] xl:items-center xl:text-left">
+                    <div className="relative flex flex-col items-center justify-center px-4 md:px-0 text-center xl:text-left">
                       <motion.div
-                        animate={{ y: [0, -10, 0], rotate: [0, 1.2, -1.2, 0] }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                        className="relative z-10 w-[220px] h-[420px] md:w-[320px] md:h-[560px] flex items-center justify-center"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1.4, ease: "easeOut" }}
+                        className="mb-8 max-w-2xl"
                       >
-                        <div className="absolute inset-0 rounded-full border border-white/10 shadow-[0_0_120px_rgba(255,215,0,0.12)]" />
-                        <img
-                          src="/images/botle.png"
-                          alt="Kumkumadi Taila bottle"
-                          className="relative z-10 h-full w-auto object-contain drop-shadow-[0_28px_80px_rgba(255,215,0,0.22)]"
-                        />
+                        <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">A scroll-led bottle ritual</p>
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
+                        <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em]">The floating flip animation is controlled by scrolling. Each scroll step reveals the product, the benefits, then the premium order call to action.</p>
                       </motion.div>
-                    </motion.div>
+                    </div>
 
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1.4, delay: 0.4, ease: "easeOut" }}
-                      className="max-w-3xl"
+                      transition={{ duration: 1.3, delay: 0.2, ease: "easeOut" }}
+                      className="rounded-[32px] border border-white/10 bg-black/55 p-8 shadow-[0_32px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                     >
-                      <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">Exquisite Ritual Oil</p>
-                      <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
-                      <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em]">Scroll down to make the bottle rise, then tilt and reveal the order experience. Every stage is designed for luxury confidence.</p>
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1.3, delay: 0.55, ease: "easeOut" }}
-                      className="mt-10 w-full max-w-3xl rounded-[32px] border border-white/10 bg-black/50 px-8 py-7 text-left backdrop-blur-xl shadow-[0_32px_80px_rgba(0,0,0,0.45)]"
-                    >
-                      <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-300/80 mb-3">Stage {floatingStage + 1} / 3</p>
-                      <h2 className="text-2xl md:text-3xl font-serif text-white mb-4">{floatingStageText.headline}</h2>
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-300/80 mb-3">Scroll stage {floatingStage + 1}</p>
+                      <h2 className="text-2xl md:text-3xl font-serif text-white mb-5">{floatingStageText.headline}</h2>
                       <p className="text-sm text-white/70 leading-7">{floatingStageText.description}</p>
 
                       {floatingStage === 2 && (
-                        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+                        <div className="mt-8 grid gap-3 sm:flex sm:justify-start">
                           <button
                             type="button"
                             onClick={() => handleAcquireNow(false)}
