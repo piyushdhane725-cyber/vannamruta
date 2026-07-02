@@ -280,32 +280,23 @@ export default function Home() {
         <motion.header
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
-          className="fixed top-0 left-0 w-full p-6 md:p-8 flex items-center z-50 pointer-events-none"
+          transition={{ duration: 1.0, delay: 0.1, ease: "easeOut" }}
+          className="fixed top-0 left-0 w-full p-6 md:p-8 flex items-center z-50"
         >
-          <div className="absolute left-1/2 -translate-x-1/2 text-sm md:text-xl tracking-[0.45em] text-yellow-500/90 uppercase font-semibold drop-shadow-[0_0_18px_rgba(255,215,0,0.18)] pointer-events-none">
-            Vanaamruta
+          <div className="pointer-events-auto text-sm md:text-base tracking-[0.45em] text-yellow-500/90 uppercase font-semibold drop-shadow-[0_0_10px_rgba(255,215,0,0.12)]">Vannamruta</div>
+          <div className="ml-auto pointer-events-auto">
+            <button
+              type="button"
+              aria-label="Open collection"
+              className="rounded-full border border-white/10 bg-black/40 p-3 text-white/80 shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-xl transition hover:border-yellow-500/40 hover:bg-yellow-500/10 hover:text-white"
+              onClick={() => document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" })}
+            >
+              <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
+            </button>
           </div>
         </motion.header>
 
-        {/* Right-side product / purchase panel (avoids covering the bottle) */}
-        {phase >= 2 && (
-          <div className="fixed right-6 top-1/3 z-50 pointer-events-auto max-w-[340px]">
-            <div className="rounded-2xl bg-black/60 border border-white/6 p-6 backdrop-blur-2xl shadow-xl text-right">
-              <div className="text-xs text-white/70 tracking-wider uppercase">Kumkumadi Taila</div>
-              <div className="mt-2 text-2xl font-semibold">{productData ? `${productData.currency}${productData.price}` : isFetchingProduct ? "Loading…" : "—"}</div>
-              <div className="mt-3 text-sm text-white/70">A ritual oil for luminous skin. Avoids covering the hero bottle during animation.</div>
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={() => handleAcquireNow(false)}
-                  className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-yellow-500/95 px-4 py-2 text-black font-semibold shadow-lg"
-                >
-                  Buy
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Intentionally no product card or glass overlay on the hero — bottle remains largest visual */}
 
         {/* INITIAL SCREEN FOR PHASE 1 (Tagline) */}
         <div className="absolute inset-0 z-30 min-h-[100dvh] w-full flex items-center justify-center pointer-events-none">
@@ -343,24 +334,15 @@ export default function Home() {
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-center pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
                 <div className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-center justify-center text-center">
-                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-6 px-4 md:px-0">
+                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-4 px-4 md:px-0">
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1.2, ease: "easeOut" }}
-                      className="max-w-3xl"
+                      transition={{ duration: 1.0, ease: "easeOut" }}
+                      className="max-w-2xl mt-[42vh]"
                     >
-                      <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">A cinematic ritual begins</p>
-                      <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
-                      <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em] max-w-2xl mx-auto">The bottle emerges from shadow, wrapped in saffron light and oil-rich motion. No clutter, no noise—only the feeling of a luxury reveal.</p>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1.1, delay: 0.2, ease: "easeOut" }}
-                      className="rounded-full border border-white/10 bg-black/35 px-5 py-3 text-[10px] uppercase tracking-[0.35em] text-white/70 backdrop-blur-xl"
-                    >
-                      Luxury splash • Golden particles • Soft volumetric glow
+                      <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
+                      <p className="mt-4 text-white/70 text-sm md:text-base">An Ayurvedic elixir for luminous, velvety skin.</p>
                     </motion.div>
                   </div>
                 </div>
@@ -389,53 +371,15 @@ export default function Home() {
                     <div className="absolute left-1/2 top-12 h-[180px] w-[60%] -translate-x-1/2 rounded-full border border-white/8 bg-[linear-gradient(120deg,rgba(255,255,255,0.04),transparent_50%,rgba(255,255,255,0.03))] shadow-[0_0_80px_rgba(255,215,0,0.08)]" />
                   </motion.div>
 
-                  <div className="relative z-10 grid w-full gap-8 xl:grid-cols-[0.62fr_0.38fr] xl:items-center xl:text-left">
-                    <div className="relative flex flex-col items-center justify-center px-4 md:px-0 text-center xl:text-left">
-                      <motion.div
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1.4, ease: "easeOut" }}
-                        className="mb-8 max-w-2xl"
-                      >
-                        <p className="text-[10px] uppercase tracking-[0.45em] text-yellow-400/70 mb-4 font-light">Scroll-led luxury reveal</p>
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
-                        <p className="mt-6 text-white/70 text-sm md:text-base leading-8 tracking-[0.04em]">The bottle rotates, lifts and reveals itself through the scroll. Each stage creates breathing room for the ritual, the ingredients, and the purchase decision.</p>
-                      </motion.div>
-                    </div>
-
+                  <div className="relative z-10 w-full flex items-center justify-center">
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1.3, delay: 0.2, ease: "easeOut" }}
-                      className="rounded-[32px] border border-white/10 bg-black/55 p-8 shadow-[0_32px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                      className="max-w-2xl mt-[42vh] text-center"
                     >
-                      <p className="text-[10px] uppercase tracking-[0.35em] text-yellow-300/80 mb-3">Scroll stage {floatingStage + 1}</p>
-                      <h2 className="text-2xl md:text-3xl font-serif text-white mb-5">{floatingStageText.headline}</h2>
-                      <p className="text-sm text-white/70 leading-7">{floatingStageText.description}</p>
-
-                      <div className="mt-6 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.3em] text-white/60">
-                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">{productData?.available ? "In stock" : "Private collection"}</span>
-                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">{productData ? `${productData.currency}${productData.price}` : "Premium pricing"}</span>
-                      </div>
-
-                      {floatingStage === 2 && (
-                        <div className="mt-8 grid gap-3 sm:flex sm:justify-start">
-                          <button
-                            type="button"
-                            onClick={() => handleAcquireNow(false)}
-                            className="w-full rounded-full border border-yellow-500/80 bg-yellow-500 px-6 py-4 text-[11px] uppercase tracking-[0.35em] text-black transition hover:bg-yellow-400 sm:w-auto"
-                          >
-                            Acquire Now
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleAcquireNow(true)}
-                            className="w-full rounded-full border border-white/10 bg-white/10 px-6 py-4 text-[11px] uppercase tracking-[0.35em] text-white transition hover:bg-white/15 sm:w-auto"
-                          >
-                            Add to Cart
-                          </button>
-                        </div>
-                      )}
+                      <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
+                      <p className="mt-4 text-white/70 text-sm md:text-base">An Ayurvedic elixir for luminous, velvety skin.</p>
                     </motion.div>
                   </div>
                 </motion.div>
@@ -443,49 +387,7 @@ export default function Home() {
             )}
           </AnimatePresence>
 
-          {/* Floating video stage overlays (left + right) — appear only during phase 3 */}
-          {phase === 3 && (
-            <>
-              {/* Left ritual / acquisition panel */}
-              <div className="fixed left-6 bottom-1/4 z-50 pointer-events-auto max-w-[420px]">
-                {floatingStage === 1 && (
-                  <div className="rounded-2xl bg-black/60 border border-white/6 p-6 backdrop-blur-2xl shadow-xl text-left">
-                    <h3 className="text-xl font-semibold">Saffron Heritage</h3>
-                    <p className="mt-3 text-sm text-white/70 whitespace-pre-line">Rare Kashmiri saffron and botanical oils for luminous, velvety skin.\n\nCrafted Slowly\n\nSmall-batch formulation with quiet luxury and thoughtful texture.\n\nSecure Checkout\n\nA polished buy flow with concierge support and premium confidence.</p>
-                  </div>
-                )}
-
-                {floatingStage === 2 && (
-                  <div className="rounded-2xl bg-black/60 border border-white/6 p-6 backdrop-blur-2xl shadow-xl text-left">
-                    <h3 className="text-2xl font-semibold">Acquire the Elixir</h3>
-                    <p className="mt-3 text-sm text-white/70">The elixir appears as part of the ritual — the left panel becomes the purchase anchor.</p>
-                    <div className="mt-4">
-                      <button
-                        onClick={() => handleAcquireNow(false)}
-                        className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-yellow-500/95 px-4 py-2 text-black font-semibold shadow-lg"
-                      >
-                        Buy the Elixir
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Right stats panel for the first stage */}
-              <div className="fixed right-6 top-1/3 z-50 pointer-events-auto max-w-[220px] text-right">
-                {floatingStage === 1 && (
-                  <div className="rounded-2xl bg-black/60 border border-white/6 p-4 backdrop-blur-2xl shadow-xl">
-                    <div className="text-3xl font-bold">21</div>
-                    <div className="text-xs text-white/70">Ayurvedic ingredients</div>
-                    <div className="mt-4 text-3xl font-bold">100%</div>
-                    <div className="text-xs text-white/70">Natural formulation</div>
-                    <div className="mt-4 text-3xl font-bold">500+</div>
-                    <div className="text-xs text-white/70">Years of tradition</div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+          {/* No floating overlays — hero must remain unobstructed and centered */}
         </div>
 
         {/* Scroll indicator */}
