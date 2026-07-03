@@ -29,6 +29,7 @@ export default function Home() {
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const heroBgVideoRef = useRef<HTMLVideoElement>(null);
   const floatingVideoRef = useRef<HTMLVideoElement>(null);
+  const scrollStageRef = useRef<number>(0);
   const [floatingDuration, setFloatingDuration] = useState(0);
   const [floatingTransitioning, setFloatingTransitioning] = useState(false);
   const { scrollY, scrollYProgress } = useScroll();
@@ -62,14 +63,25 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // Load only the initial videos up front to avoid fetching all large assets at once.
     const goldVideo = goldVideoRef.current;
     const heroBgVideo = heroBgVideoRef.current;
-    const floatingVideo = floatingVideoRef.current;
 
     if (goldVideo) goldVideo.load();
     if (heroBgVideo) heroBgVideo.load();
-    if (floatingVideo) floatingVideo.load();
   }, []);
+
+  useEffect(() => {
+    // Defer loading the floating animation until phase 3 is entered.
+    const floatingVideo = floatingVideoRef.current;
+    if (phase === 3 && floatingVideo) {
+      try {
+        floatingVideo.load();
+      } catch (e) {
+        console.warn("failed to load floating video", e);
+      }
+    }
+  }, [phase]);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -196,20 +208,47 @@ export default function Home() {
     const floatingVideo = floatingVideoRef.current;
     if (!floatingVideo) return;
 
+    let lastScroll = 0;
     const handleScroll = () => {
       if (phase !== 3 || floatingDuration <= 0 || floatingTransitioning) return;
+      const now = Date.now();
+      if (now - lastScroll < 200) return; // debounce quick scroll events
+      lastScroll = now;
 
-      if (window.scrollY > 5) {
-        setFloatingTransitioning(true);
-        const finalTime = Math.max(0, floatingDuration - 0.04);
-        floatingVideo.currentTime = finalTime;
+      // advance scroll stage (first scroll -> stage 1, second scroll -> stage 2)
+      scrollStageRef.current = Math.min(2, scrollStageRef.current + 1);
+      const stage = scrollStageRef.current;
+
+      if (stage === 1) {
+        // show a very short portion of the floating animation (0.05s)
+        const t = Math.min(0.05, floatingDuration);
+        try {
+          floatingVideo.currentTime = t;
+        } catch (e) {
+          console.warn("seek error stage1", e);
+        }
         floatingVideo.pause();
-        setPhase(4);
+      } else if (stage === 2) {
+        // continue slightly further (0.09s) then transition to phase 4 and show CTA
+        setFloatingTransitioning(true);
+        const t2 = Math.min(0.09, floatingDuration);
+        try {
+          floatingVideo.currentTime = t2;
+        } catch (e) {
+          console.warn("seek error stage2", e);
+        }
+        // brief play to allow the frame change, then lock into phase 4
+        floatingVideo.play().catch(() => {});
+        setTimeout(() => {
+          floatingVideo.pause();
+          setFloatingTransitioning(false);
+          setFloatingComplete(true);
+          setPhase(4);
+        }, 150);
       }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [phase, floatingDuration, floatingTransitioning]);
 
@@ -255,7 +294,7 @@ export default function Home() {
                   autoPlay
                   muted
                   playsInline
-                  preload="auto"
+                  preload="metadata"
                   poster="/images/hero-poster.jpg"
                   disablePictureInPicture
                   style={{ backfaceVisibility: "hidden" }}
@@ -275,7 +314,7 @@ export default function Home() {
                   ref={floatingVideoRef}
                   muted
                   playsInline
-                  preload="auto"
+                  preload="metadata"
                   poster="/images/hero-poster.jpg"
                   disablePictureInPicture
                   style={{ backfaceVisibility: "hidden" }}
@@ -360,8 +399,8 @@ export default function Home() {
                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-center pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
-                <div className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-center justify-center text-center">
-                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-4 px-4 md:px-0">
+                <div className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-start justify-center text-left md:pl-12 lg:pl-24">
+                  <div className="relative z-10 flex w-full flex-col items-start justify-start gap-4 px-4 md:px-0">
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -385,8 +424,8 @@ export default function Home() {
                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-center pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
-                <div className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-center justify-center text-center">
-                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-4 px-4 md:px-0">
+                <div className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] flex-col items-start justify-center text-left md:pl-12 lg:pl-24">
+                  <div className="relative z-10 flex w-full flex-col items-start justify-start gap-4 px-4 md:px-0">
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -410,18 +449,27 @@ export default function Home() {
                 className="absolute inset-0 md:relative md:inset-auto w-full h-full md:h-auto max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col justify-between pt-[14vh] pb-[12vh] md:py-0 md:justify-center pointer-events-auto"
               >
                 <motion.div
-                  className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] items-center justify-center text-center"
+                  className="relative w-full h-full md:h-auto max-w-6xl mx-auto flex min-h-[82vh] items-start justify-center text-left md:pl-12 lg:pl-24"
                   style={{ y: heroLift, opacity: heroTitleOpacity }}
                 >
-                  <div className="relative z-10 w-full flex items-center justify-center">
+                  <div className="relative z-10 w-full flex items-start justify-start">
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.2, ease: "easeOut" }}
-                      className="max-w-2xl mt-[42vh] text-center"
+                      className="max-w-2xl mt-[42vh] text-left"
                     >
                       <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight">Kumkumadi Taila</h1>
                       <p className="mt-4 text-white/70 text-sm md:text-base">An Ayurvedic elixir for luminous, velvety skin.</p>
+                      <div className="mt-6">
+                        <button
+                          type="button"
+                          onClick={() => handleAcquireNow(false)}
+                          className="rounded-full border border-yellow-600/50 bg-yellow-500/10 px-6 py-3 text-[12px] uppercase tracking-[0.35em] text-yellow-100 transition hover:bg-yellow-900/30 hover:border-yellow-400 hover:text-white"
+                        >
+                          ACQUIRE THE ELIXIR
+                        </button>
+                      </div>
                     </motion.div>
                   </div>
                 </motion.div>
